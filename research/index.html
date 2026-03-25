@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research | Presba, LLC</title>
+  <meta name="description" content="Applied AI research from Presba, LLC — behavioral evaluation, adversarial resilience, compliance alignment, and vendor-agnostic evaluation infrastructure.">
+  <meta property="og:title" content="Research | Presba, LLC">
+  <meta property="og:description" content="Applied AI research publications from Presba.">
+  <meta property="og:type" content="website">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.88em' font-size='80' font-family='serif' fill='%230d3b3e'>P</text></svg>">
+  <style>
+    :root {
+      --fg: #1a1a1a;
+      --fg-muted: #6b6b6b;
+      --bg: #f5f2ee;
+      --bg-dark: #0d3b3e;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --border: #ddd5ca;
+      --serif: 'Instrument Serif', Georgia, serif;
+      --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* NAV */
+    .nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 50;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(245, 242, 238, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      color: var(--fg);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--fg-muted);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--fg); }
+    .nav-links a.active { color: var(--fg); }
+
+    /* HERO */
+    .page-hero {
+      padding: 10rem 2rem 4rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .page-hero .section-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 2rem;
+    }
+    .page-hero h1 {
+      font-family: var(--serif);
+      font-size: clamp(2.5rem, 5vw, 4.5rem);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--fg);
+      margin-bottom: 1.5rem;
+    }
+    .page-hero h1 em {
+      font-style: italic;
+      color: var(--bg-dark);
+    }
+    .page-hero .subtitle {
+      max-width: 600px;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--fg-muted);
+    }
+
+    /* DIVIDER */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* PAPERS LIST */
+    .papers {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem 7rem;
+    }
+    .paper-card {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 2.5rem;
+      align-items: start;
+      padding: 3rem 0;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+      color: inherit;
+      transition: opacity 0.2s;
+    }
+    .paper-card:first-child {
+      border-top: 1px solid var(--border);
+    }
+    .paper-card:hover {
+      opacity: 0.75;
+    }
+    .paper-num {
+      font-family: var(--serif);
+      font-size: 0.85rem;
+      color: var(--fg-muted);
+      padding-top: 0.25rem;
+      min-width: 2rem;
+    }
+    .paper-info h2 {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      color: var(--fg);
+      margin-bottom: 0.75rem;
+    }
+    .paper-meta {
+      font-size: 0.8rem;
+      color: var(--accent);
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    .paper-info p {
+      font-size: 0.95rem;
+      line-height: 1.7;
+      color: var(--fg-muted);
+      max-width: 640px;
+    }
+    .paper-arrow {
+      display: inline-block;
+      margin-left: 0.5rem;
+      transition: transform 0.2s;
+    }
+    .paper-card:hover .paper-arrow {
+      transform: translateX(4px);
+    }
+
+    /* FOOTER */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .footer span {
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+    }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a {
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--fg); }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .paper-card { grid-template-columns: 1fr; gap: 0.75rem; }
+      .paper-num { display: none; }
+      .footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="/" class="nav-logo">Presba</a>
+    <div class="nav-links">
+      <a href="/#work">What We Do</a>
+      <a href="/research/" class="active">Research</a>
+      <a href="/#about">About</a>
+      <a href="/#contact">Contact</a>
+    </div>
+  </nav>
+
+  <!-- PAGE HERO -->
+  <div class="page-hero">
+    <div class="section-label">Research</div>
+    <h1>Applied AI <em>research.</em></h1>
+    <p class="subtitle">
+      Technical publications on model evaluation, behavioral analysis,
+      adversarial resilience, and the infrastructure needed to deploy
+      AI responsibly in government and enterprise environments.
+    </p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- PAPERS -->
+  <div class="papers">
+
+    <a href="/research/behavioral-fingerprinting.html" class="paper-card">
+      <div class="paper-num">01</div>
+      <div class="paper-info">
+        <div class="paper-meta">Behavioral Evaluation &middot; 2026</div>
+        <h2>Behavioral Fingerprinting of Large Language Models: Beyond Benchmark Scores to Operational Characterization <span class="paper-arrow">&rarr;</span></h2>
+        <p>
+          Traditional benchmarks measure capability but fail to characterize behavioral
+          tendencies that determine real-world fitness. We propose a 16-dimension behavioral
+          fingerprinting framework that captures model personality through adversarial probing,
+          multi-turn escalation, and cross-condition delta analysis.
+        </p>
+      </div>
+    </a>
+
+    <a href="/research/sycophancy-problem.html" class="paper-card">
+      <div class="paper-num">02</div>
+      <div class="paper-info">
+        <div class="paper-meta">Agreement Bias &middot; 2026</div>
+        <h2>The Sycophancy Problem: Measuring and Mitigating Agreement Bias in Large Language Models <span class="paper-arrow">&rarr;</span></h2>
+        <p>
+          Sycophancy represents the most prevalent behavioral failure mode in deployed AI.
+          We characterize it across four distinct subtypes and demonstrate that RLHF training
+          systematically amplifies this behavior, with implications for every domain deploying
+          language models.
+        </p>
+      </div>
+    </a>
+
+    <a href="/research/compliance-alignment.html" class="paper-card">
+      <div class="paper-num">03</div>
+      <div class="paper-info">
+        <div class="paper-meta">Federal Compliance &middot; 2026</div>
+        <h2>Bridging AI Evaluation and Federal Compliance: Toward ICD 203-Aligned Model Assessment Frameworks <span class="paper-arrow">&rarr;</span></h2>
+        <p>
+          Federal agencies adopting AI lack evaluation frameworks aligned with existing
+          compliance mandates. We map AI evaluation dimensions to ICD 203, NIST AI RMF,
+          and NIST 600-1, creating a unified methodology that satisfies both technical rigor
+          and regulatory requirements.
+        </p>
+      </div>
+    </a>
+
+    <a href="/research/adversarial-resilience.html" class="paper-card">
+      <div class="paper-num">04</div>
+      <div class="paper-info">
+        <div class="paper-meta">Adversarial Testing &middot; 2026</div>
+        <h2>Adversarial Resilience Testing for Production AI Systems: A Graduated Escalation Methodology <span class="paper-arrow">&rarr;</span></h2>
+        <p>
+          Most evaluation frameworks test only binary pass/fail resilience against adversarial
+          attacks. We propose a graduated escalation methodology that measures failure thresholds,
+          failure mode characteristics, and recovery behavior across prompt injection, jailbreak,
+          and system prompt extraction vectors.
+        </p>
+      </div>
+    </a>
+
+    <a href="/research/context-degradation.html" class="paper-card">
+      <div class="paper-num">05</div>
+      <div class="paper-info">
+        <div class="paper-meta">Context Analysis &middot; 2026</div>
+        <h2>Context Window Degradation in Extended AI Interactions: Quantifying Instruction Decay and Behavioral Drift <span class="paper-arrow">&rarr;</span></h2>
+        <p>
+          As conversations extend, models exhibit systematic degradation in instruction
+          compliance, factual consistency, and behavioral stability. We quantify this
+          context drift phenomenon and examine its implications for agentic AI applications
+          and long-running workflows.
+        </p>
+      </div>
+    </a>
+
+    <a href="/research/vendor-agnostic-evaluation.html" class="paper-card">
+      <div class="paper-num">06</div>
+      <div class="paper-info">
+        <div class="paper-meta">Evaluation Infrastructure &middot; 2026</div>
+        <h2>The Case for Vendor-Agnostic AI Evaluation Infrastructure in Government and Enterprise <span class="paper-arrow">&rarr;</span></h2>
+        <p>
+          Organizations deploying AI from multiple vendors lack standardized infrastructure
+          to compare models on equal footing. We argue for open evaluation infrastructure
+          that standardizes model comparison through uniform execution, consistent scoring,
+          and behavioral profiling.
+        </p>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <span>&copy; 2025&ndash;2026 Presba, LLC</span>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/#work">What We Do</a>
+      <a href="/#about">About</a>
+      <a href="/#contact">Contact</a>
+    </div>
+  </footer>
+
+</body>
+</html>

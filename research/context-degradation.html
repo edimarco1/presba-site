@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Context Window Degradation in Extended AI Interactions | Presba Research</title>
+  <meta name="description" content="Quantifying instruction decay and behavioral drift in large language models during extended multi-turn conversations. A comprehensive survey of positional bias, context utilization, and mitigation strategies for agentic AI systems.">
+  <meta name="author" content="Presba, LLC">
+  <meta property="og:title" content="Context Window Degradation in Extended AI Interactions | Presba Research">
+  <meta property="og:description" content="Quantifying instruction decay and behavioral drift in large language models. Research by Presba LLC.">
+  <meta property="og:type" content="article">
+  <meta name="keywords" content="context window, LLM, instruction decay, behavioral drift, agentic AI, transformer attention, positional bias, context engineering">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.88em' font-size='80' font-family='serif' fill='%230d3b3e'>P</text></svg>">
+  <style>
+    :root {
+      --fg: #1a1a1a;
+      --fg-muted: #6b6b6b;
+      --bg: #f5f2ee;
+      --bg-dark: #0d3b3e;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --border: #ddd5ca;
+      --serif: 'Instrument Serif', Georgia, serif;
+      --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ---- NAV ---- */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(245, 242, 238, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      color: var(--fg);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--fg-muted);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--fg); }
+    .nav-mobile-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 28px;
+      height: 20px;
+      position: relative;
+    }
+    .nav-mobile-btn span {
+      display: block;
+      width: 100%;
+      height: 2px;
+      background: var(--fg);
+      position: absolute;
+      left: 0;
+      transition: all 0.3s;
+    }
+    .nav-mobile-btn span:nth-child(1) { top: 0; }
+    .nav-mobile-btn span:nth-child(2) { top: 9px; }
+    .nav-mobile-btn span:nth-child(3) { top: 18px; }
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg);
+      z-index: 49;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 2rem;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      font-family: var(--serif);
+      font-size: 2rem;
+      color: var(--fg);
+      text-decoration: none;
+    }
+
+    /* ---- ARTICLE LAYOUT ---- */
+    .article-header {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 8rem 2rem 3rem;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-decoration: none;
+      margin-bottom: 3rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--accent-hover); }
+    .back-link svg {
+      width: 14px;
+      height: 14px;
+    }
+    .article-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+    .article-header h1 {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 5vw, 3rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      margin-bottom: 1.5rem;
+    }
+    .article-subtitle {
+      font-family: var(--serif);
+      font-size: 1.25rem;
+      font-style: italic;
+      color: var(--fg-muted);
+      line-height: 1.5;
+      margin-bottom: 2rem;
+    }
+    .article-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--fg-muted);
+    }
+    .article-meta strong {
+      color: var(--fg);
+      font-weight: 600;
+    }
+
+    /* ---- ARTICLE BODY ---- */
+    .article-body {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 3rem 2rem 6rem;
+    }
+    .article-body .section-heading {
+      font-family: var(--serif);
+      font-size: 1.75rem;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      margin-top: 3rem;
+      margin-bottom: 1.25rem;
+      line-height: 1.25;
+    }
+    .article-body .section-heading:first-child {
+      margin-top: 0;
+    }
+    .article-body .subsection-heading {
+      font-family: var(--sans);
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--fg);
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      line-height: 1.35;
+    }
+    .article-body p {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--fg);
+      margin-bottom: 1.25rem;
+    }
+    .article-body .abstract-text {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--fg-muted);
+      border-left: 3px solid var(--accent);
+      padding-left: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .article-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.85rem;
+    }
+    .article-body table th {
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--fg-muted);
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid var(--border);
+      background: rgba(13, 59, 62, 0.03);
+    }
+    .article-body table td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--fg);
+      line-height: 1.5;
+    }
+    .article-body table tr:last-child td {
+      border-bottom: none;
+    }
+    .article-body .table-caption {
+      font-size: 0.8rem;
+      color: var(--fg-muted);
+      font-style: italic;
+      margin-top: -0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .article-body .citation {
+      color: var(--bg-dark);
+      font-weight: 500;
+    }
+
+    /* ---- REFERENCES ---- */
+    .references-section {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 2px solid var(--border);
+    }
+    .references-section .section-heading {
+      margin-top: 0;
+    }
+    .references-list {
+      list-style: none;
+      counter-reset: ref-counter;
+    }
+    .references-list li {
+      counter-increment: ref-counter;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--fg-muted);
+      margin-bottom: 0.75rem;
+      padding-left: 2.5rem;
+      position: relative;
+    }
+    .references-list li::before {
+      content: "[" counter(ref-counter) "]";
+      position: absolute;
+      left: 0;
+      font-weight: 600;
+      color: var(--fg);
+      font-size: 0.8rem;
+    }
+    .references-list li em {
+      font-style: italic;
+    }
+
+    /* ---- DIVIDER ---- */
+    .article-divider {
+      width: 60px;
+      height: 2px;
+      background: var(--accent);
+      margin: 3rem 0;
+    }
+
+    /* ---- FOOTER ---- */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .footer span {
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+    }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a {
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--fg); }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-mobile-btn { display: block; }
+      .article-header { padding-top: 6rem; }
+      .article-meta { flex-direction: column; gap: 0.75rem; }
+      .article-body table { font-size: 0.78rem; }
+      .article-body table th,
+      .article-body table td { padding: 0.5rem 0.6rem; }
+      .footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="/" class="nav-logo">Presba</a>
+    <div class="nav-links">
+      <a href="/#work">What We Do</a>
+      <a href="/#about">About</a>
+      <a href="/research">Research</a>
+      <a href="/#contact">Contact</a>
+    </div>
+    <button class="nav-mobile-btn" id="menu-btn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="/" onclick="closeMobile()">Home</a>
+    <a href="/#work" onclick="closeMobile()">What We Do</a>
+    <a href="/#about" onclick="closeMobile()">About</a>
+    <a href="/research" onclick="closeMobile()">Research</a>
+    <a href="/#contact" onclick="closeMobile()">Contact</a>
+  </div>
+
+  <!-- ARTICLE HEADER -->
+  <header class="article-header">
+    <a href="/research" class="back-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      All Research
+    </a>
+    <div class="article-label">Research Paper</div>
+    <h1>Context Window Degradation in Extended AI Interactions: Quantifying Instruction Decay and Behavioral Drift</h1>
+    <p class="article-subtitle">A comprehensive survey of positional bias, multi-turn performance loss, and behavioral instability in large language models, with implications for agentic system design</p>
+    <div class="article-meta">
+      <div><strong>Author</strong><br>Presba, LLC</div>
+      <div><strong>Published</strong><br>2026</div>
+      <div><strong>Category</strong><br>Applied AI Research</div>
+    </div>
+  </header>
+
+  <!-- ARTICLE BODY -->
+  <article class="article-body">
+
+    <!-- ABSTRACT -->
+    <div class="section-heading">Abstract</div>
+
+    <p class="abstract-text">
+      Large language models (LLMs) have achieved remarkable fluency across a wide range of tasks, yet their reliability degrades in ways that are both systematic and underexamined as conversational interactions extend beyond initial turns. This paper presents a comprehensive survey of the mechanisms underlying context window degradation, drawing on recent empirical work across positional bias, multi-turn instruction decay, behavioral drift, and agentic system failure. We synthesize findings from over a dozen studies published between 2024 and 2026 to establish that (1) information retrieval accuracy drops by 30% or more based on positional placement alone, an effect rooted in the architectural geometry of transformer attention; (2) multi-turn conversations exhibit an average 39% performance degradation relative to single-turn baselines, with unreliability increasing by 112%; (3) persona and behavioral consistency degrades by over 30% within 8-12 dialogue turns; and (4) agentic systems experience compounding drift, with a median onset of detectable degradation at 73 interactions and task success rates declining from 87.3% to 50.6%. We further examine the gap between advertised and effective context window sizes, which NVIDIA's RULER benchmark places at 50-65% of marketed capacity. Finally, we review mitigation strategies including context compression, structured external memory, reminder injection, and adaptive behavioral anchoring, which in combination achieve up to 81.5% drift reduction. These findings carry direct implications for the design and deployment of long-running agentic AI systems in enterprise and government environments.
+    </p>
+
+    <div class="article-divider"></div>
+
+    <!-- 1. INTRODUCTION -->
+    <div class="section-heading">1. Introduction</div>
+
+    <p>
+      The rapid expansion of context window sizes in large language models has been one of the most visible axes of competition among foundation model providers. Between 2024 and 2026, advertised context windows grew from 8,000 tokens to one million or more, with major providers including Anthropic, Google DeepMind, OpenAI, and Meta each claiming progressively larger capacities. The implicit promise is straightforward: a larger context window permits the model to process more information, maintain longer conversations, and execute more complex multi-step tasks. In practice, however, the relationship between context capacity and context utilization is far more tenuous than marketing materials suggest.
+    </p>
+    <p>
+      This paper examines a cluster of related phenomena that we collectively term <em>context window degradation</em>: the systematic decline in instruction compliance, factual retrieval accuracy, and behavioral consistency that large language models exhibit as conversational interactions extend beyond initial turns or as context utilization approaches advertised limits. While individual aspects of this problem have been studied in isolation, no comprehensive treatment has unified the underlying mechanisms, quantified their combined impact, or drawn out the practical implications for the growing class of agentic AI systems that depend on sustained multi-turn coherence.
+    </p>
+    <p>
+      The stakes are considerable. Enterprise deployments of AI agents now routinely involve multi-step reasoning chains spanning dozens or hundreds of tool invocations. A 2025 survey of 1,200 production deployments identified context management as a top operational challenge, with an estimated 65% of enterprise AI failures attributable to context drift or memory loss during multi-step reasoning rather than raw context exhaustion. When a 2% misalignment introduced early in an agent chain compounds into a 40% failure rate by the final step, the practical consequences for trust-critical applications in finance, compliance, and defense become severe.
+    </p>
+    <p>
+      We organize our analysis around four core dimensions. First, we revisit the foundational "lost in the middle" effect and its architectural origins in transformer attention (Section 2). Second, we examine the divergence between advertised and effective context window sizes (Section 3). Third, we present evidence on instruction decay in multi-turn conversations (Section 4). Fourth, we survey behavioral drift and personality instability across extended interactions (Section 5). We then discuss implications for agentic AI systems (Section 6), review available mitigation strategies (Section 7), and offer a synthesis of current understanding along with directions for future work (Sections 8 and 9).
+    </p>
+
+    <!-- 2. THE LOST IN THE MIDDLE EFFECT -->
+    <div class="section-heading">2. The Lost in the Middle Effect</div>
+
+    <p>
+      The foundational empirical finding underlying context window degradation was established by <span class="citation">Liu et al. (2024)</span> in their landmark study "Lost in the Middle: How Language Models Use Long Contexts," published in <em>Transactions of the Association for Computational Linguistics</em>. The authors systematically varied the position of a key fact within contexts of 10, 20, and 30 documents, testing retrieval accuracy across GPT-3.5-Turbo, Claude 1.3, MPT-30B-Instruct, and LLaMA-30B on multi-document question answering and key-value retrieval tasks.
+    </p>
+    <p>
+      The results revealed a distinctive U-shaped performance curve: models retrieved information most accurately when it appeared at the beginning or end of the context, with a pronounced valley of degradation in the middle. In 20-document contexts, accuracy at position 1 averaged approximately 75%, dropped to roughly 55% at position 10, and recovered to approximately 72% at position 20. This represents a 30% or greater accuracy drop attributable to positional placement alone, with the effect persisting across every model tested. GPT-4, the best-performing model evaluated, exhibited the same U-shaped pattern at higher absolute accuracy levels. No model was immune.
+    </p>
+    <p>
+      Critically, the effect intensifies with longer contexts. As context length increased from 10 to 20 to 30 documents, the middle valley deepened, and the degradation proved task-independent, appearing in both question answering and synthetic key-value retrieval. Subsequent validation by the <span class="citation">Chroma Context Rot Study (2025)</span>, which tested 18 frontier models including GPT-4.1, Claude Opus 4, and Gemini 2.5, confirmed accuracy drops of 20-50% as context extended from 10,000 to 100,000 tokens. Claude models decayed the most slowly, but no architecture eliminated the effect entirely. <span class="citation">Du et al. (2025)</span>, in work presented at EMNLP, found that performance still drops 13.9% to 85% as input length increases, even with modern architectural refinements.
+    </p>
+
+    <div class="subsection-heading">2.1 Architectural Origins</div>
+
+    <p>
+      Recent theoretical work has established that the U-shaped attention bias is not a training artifact but an inherent geometric property of the transformer architecture. <span class="citation">Lost in the Middle at Birth (2026)</span> demonstrated that the bias is present at initialization, before any training or positional encoding takes effect. Two structural features are responsible. First, causal masking algebraically guarantees a geometric primacy bias: early tokens lie on exponentially more computational paths through the network than later tokens, creating what the authors term a "Primacy Tail" of logarithmically divergent gradient influence. Second, residual connections guarantee a recency bias by providing a direct information pathway to the final token, creating a "Recency Delta" anchor. The middle of the context is architecturally disadvantaged on both counts, having neither the exponential path advantage of early tokens nor the direct-connection advantage of late tokens.
+    </p>
+    <p>
+      The attention sink phenomenon provides additional mechanistic detail. Research presented at <span class="citation">ICLR 2025</span> and extended in 2026 showed that LLMs allocate disproportionate attention to the first token regardless of its semantic content. A "P0 Sink Circuit" enables position-zero recognition within just two transformer blocks, with no reliance on semantic information. The first token acts as a key bias, with angles between its key vector and the query vectors of other tokens being typically small, driving systematic attention concentration. Furthermore, <span class="citation">layer-wise analysis (2026)</span> has shown that recency bias increases monotonically with network depth, while primacy bias peaks in early layers and then stabilizes. Early layers establish what to remember from the beginning of context; later layers increasingly attend to recent tokens.
+    </p>
+    <p>
+      These architectural findings carry a sobering implication: the lost-in-the-middle effect cannot be eliminated through scaling alone. It is a consequence of the causal attention mechanism that defines the transformer architecture. Mitigation is possible, but requires explicit engineering intervention rather than simply training larger models with longer contexts.
+    </p>
+
+    <!-- 3. CONTEXT WINDOW SIZE VS. EFFECTIVE UTILIZATION -->
+    <div class="section-heading">3. Context Window Size vs. Effective Utilization</div>
+
+    <p>
+      The rapid growth in advertised context window sizes between 2024 and 2026 created a widespread assumption that more context capacity equates to better performance on tasks requiring long-range information integration. Current flagship models claim context windows ranging from 128,000 tokens (GPT-4 Turbo, GPT-4o) to 200,000 tokens (Claude 3.5 Sonnet, Opus 4.5) to one million tokens (Gemini 2.0 Flash, Gemini 2.5 Pro, Llama 4 Maverick). However, empirical benchmarking reveals a substantial and consistent gap between advertised capacity and effective utilization.
+    </p>
+    <p>
+      NVIDIA's RULER benchmark (<span class="citation">Hsieh et al., 2024</span>), presented at COLM 2024, provided the most systematic quantification of this gap. RULER extends the Needle in a Haystack paradigm with four task categories -- retrieval, multi-hop tracing, aggregation, and question answering -- all configurable for varying length and complexity. The central finding is that effective context is typically 50-65% of advertised size. A model claiming 128,000 tokens typically becomes unreliable around 80,000-90,000 for complex tasks. A model claiming one million tokens works best up to approximately 500,000.
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Claimed Context</th>
+          <th>Effective Context</th>
+          <th>Score at 4K</th>
+          <th>Score at 128K</th>
+          <th>Degradation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>GPT-4-1106</td>
+          <td>128K</td>
+          <td>64K</td>
+          <td>96.6</td>
+          <td>81.2</td>
+          <td>-15.4 pts</td>
+        </tr>
+        <tr>
+          <td>Llama 3.1 (70B)</td>
+          <td>128K</td>
+          <td>64K</td>
+          <td>96.5</td>
+          <td>66.6</td>
+          <td>-29.9 pts</td>
+        </tr>
+        <tr>
+          <td>Gemini-1.5-Pro</td>
+          <td>1M</td>
+          <td>&gt;128K</td>
+          <td>96.7</td>
+          <td>94.4</td>
+          <td>-2.3 pts</td>
+        </tr>
+        <tr>
+          <td>Mixtral-8x7B</td>
+          <td>32K</td>
+          <td>32K</td>
+          <td>94.9</td>
+          <td>44.5</td>
+          <td>-50.4 pts</td>
+        </tr>
+        <tr>
+          <td>LongChat</td>
+          <td>32K</td>
+          <td>&lt;4K</td>
+          <td>84.7</td>
+          <td>0.0</td>
+          <td>Catastrophic</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="table-caption">Table 1. Selected RULER benchmark results showing degradation from 4K to 128K context lengths. Data from Hsieh et al. (2024).</p>
+
+    <p>
+      The RULER data reveals several important patterns. Models claiming 32,000-token contexts often fail catastrophically at 64,000 tokens and beyond, with scores dropping to zero. Even high-performing models like GPT-4-1106 lose 15.4 points between 4K and 128K, while Llama 3.1-70B loses nearly 30 points across the same range. These are not marginal differences; they represent the difference between reliable and unreliable output.
+    </p>
+    <p>
+      A related finding, which we term the "bigger is not better" paradox, complicates the assumption that providing more context is uniformly helpful. Research from Amazon's Alexa team demonstrated that adding more few-shot examples can actually decrease accuracy because the model overfits to the expanded context. Anthropic's own research (<span class="citation">2025</span>) confirmed that "model accuracy decreases as context window size increases," attributing this to the quadratic growth in attention relationships: at 10,000 tokens, the model must track 100 million attention relationships; at 100,000 tokens, this grows to 10 billion. Performance drops at the upper end of a model's context window are often sudden rather than gradual -- a model may function well until approximately 65% of its advertised capacity, then exhibit rapid degradation.
+    </p>
+    <p>
+      The <span class="citation">Needle in a Haystack benchmark (Kamradt, 2024)</span>, while instrumental in popularizing long-context evaluation, illustrates a further complication. By systematically placing a specific fact at varying depths within large bodies of text and measuring retrieval accuracy, NIAH produces intuitive 2D heatmaps. Many frontier models now achieve near-perfect NIAH scores. However, NIAH tests simple retrieval rather than reasoning, and near-perfect NIAH performance does not predict success on the more demanding RULER tasks, nor on <span class="citation">BABILong (2024)</span>, which extends NIAH with multi-step reasoning requirements. Models that retrieve facts flawlessly may still fail to reason over those same facts when they reside in the middle of a long context.
+    </p>
+
+    <!-- 4. INSTRUCTION DECAY IN MULTI-TURN CONVERSATIONS -->
+    <div class="section-heading">4. Instruction Decay in Multi-Turn Conversations</div>
+
+    <p>
+      While the lost-in-the-middle effect and RULER benchmark address single-turn scenarios where information is placed at various positions within a static context, production deployments of LLMs overwhelmingly involve multi-turn conversations. The dynamics of multi-turn interaction introduce additional degradation mechanisms that compound the positional biases described above.
+    </p>
+    <p>
+      The most comprehensive study to date is <span class="citation">"LLMs Get Lost In Multi-Turn Conversation" (Microsoft Research and Salesforce Research, 2025)</span>, which analyzed over 200,000 simulated conversations across 15 LLMs. The headline finding is stark: all top open- and closed-weight LLMs exhibit significantly lower performance in multi-turn conversations than in single-turn interactions, with an average performance drop of 39% across six generation tasks. Decomposing this drop reveals that aptitude loss accounts for approximately 16% of the degradation, while unreliability -- measured as variance in output quality -- increases by 112%, more than doubling. Single-turn performance averaged approximately 90% on fully specified instructions, while multi-turn performance on incrementally specified instructions dropped to approximately 65%, a 25 percentage point absolute decline that manifested even in two-turn conversations.
+    </p>
+    <p>
+      The study identified four principal failure modes. First, models generate overly verbose responses as conversations extend, consuming additional context budget without proportional information gain. Second, models propose final solutions prematurely, before the user has finished specifying requirements. Third, models make incorrect assumptions about underspecified details rather than requesting clarification. Fourth, and most critically, models rely too heavily on previous (incorrect) answer attempts, creating error cascades: "When LLMs take a wrong turn in a conversation, they get lost and do not recover." This cascading property transforms small initial errors into persistent failures.
+    </p>
+    <p>
+      Interestingly, the degradation exhibits a saturation pattern. Performance drops are steepest in the transition from single-turn to multi-turn, with the most severe decline occurring between 4,000 and 16,000 tokens of accumulated context. Beyond that range, degradation stabilizes rather than continuing to worsen indefinitely. This saturation effect aligns with the lost-in-the-middle finding that the performance valley has a floor.
+    </p>
+    <p>
+      A complementary perspective emerges from <span class="citation">Dongre et al. (2025)</span>, presented at AAAI, who propose that context drift follows a bounded stochastic process that reaches equilibrium rather than decaying monotonically. Using KL divergence as a measure of output distribution shift, they found that models converge to characteristic equilibrium divergence levels: GPT-4.1 stabilized at a KL divergence of approximately 1.813 (lowest, most stable), while LLaMA-3.1-8B stabilized at approximately 20.386 (highest, least stable). This equilibrium framework suggests that drift is bounded but model-dependent, with larger and more capable models typically achieving lower equilibrium divergence.
+    </p>
+    <p>
+      More recent work by <span class="citation">Intent Mismatch (2026)</span> identifies a further mechanism: even when context is technically intact, the model's internal representation of user intent drifts from the original specification over the course of multi-turn interaction. This intent mismatch compounds the positional and attentional effects described in earlier sections, creating a multi-layered degradation process that cannot be addressed by context window expansion alone.
+    </p>
+
+    <!-- 5. BEHAVIORAL DRIFT AND PERSONALITY INSTABILITY -->
+    <div class="section-heading">5. Behavioral Drift and Personality Instability</div>
+
+    <p>
+      Beyond instruction compliance and factual accuracy, extended interactions reveal a third axis of degradation: instability in the behavioral and personality characteristics that models are instructed to maintain. This dimension is particularly relevant for applications that require consistent personas, tonal registers, or domain-specific behavioral profiles across long conversations.
+    </p>
+    <p>
+      <span class="citation">Chen et al. (2024)</span>, in "Examining Identity Drift in Conversations of LLM Agents," tested 9 LLMs across multi-turn personal conversations, measuring identity stability at three snapshots (after themes 12, 24, and 36) using 14 psychological questionnaires. The findings were counterintuitive in several respects. First, larger models experienced greater identity drift, not less. Second, while model family differences existed, they were weaker than parameter size effects. Third, and contrary to common practice, assigning an explicit persona did not reliably help maintain identity. GPT-4o maintained only 2-6 consistent identity factors across personality measures, while LLaMA 3.1 405B achieved 10-16 consistent factors with persona assignment but only 7 without.
+    </p>
+    <p>
+      The <span class="citation">PERSIST framework (AAAI 2026)</span> provides the most rigorous assessment to date, evaluating 25 open-source models ranging from 1 billion to 685 billion parameters across over 2 million responses. Four findings are particularly salient. First, simple reordering of evaluation questions produces substantially different personality trait measurements, indicating that measured personality is more a function of prompt structure than stable internal representation. Second, scaling does not resolve the problem: models with 400 billion or more parameters exhibit substantial instability. Third, chain-of-thought reasoning creates a paradox, producing higher response variability with lower perplexity -- models become more confident in individual responses while being less consistent across responses. Fourth, interventions expected to stabilize behavior, including reasoning chains and conversation history, can paradoxically increase variability. The authors conclude that "current LLMs lack the architectural foundations for genuine behavioral consistency."
+    </p>
+    <p>
+      Practitioner observations corroborate these findings at smaller scales. After 20-30 exchanges, models subtly lose their "sense of self," with tone shifts, personality fading, and contradictions emerging. Quantitative tracking indicates that persona self-consistency metrics degrade by more than 30% after 8-12 dialogue turns, even when the full conversation context remains within the model's window. This timeline aligns with the multi-turn instruction decay findings described in Section 4, suggesting that behavioral drift and instruction decay share common attentional mechanisms.
+    </p>
+    <p>
+      It is worth noting that behavioral drift also occurs across model updates, as documented in the <span class="citation">Harvard Data Science Review (2024)</span> analysis of ChatGPT's behavior over time. Significant performance and behavioral shifts were observed across diverse tasks over short time periods, representing a temporal dimension of inconsistency that is orthogonal to within-conversation drift but equally disruptive for production deployments that depend on behavioral stability.
+    </p>
+
+    <!-- 6. IMPLICATIONS FOR AGENTIC AI SYSTEMS -->
+    <div class="section-heading">6. Implications for Agentic AI Systems</div>
+
+    <p>
+      The degradation phenomena described in Sections 2 through 5 carry particularly severe consequences for agentic AI systems -- autonomous or semi-autonomous agents that execute multi-step tasks involving tool use, reasoning chains, and extended interaction histories. These systems represent the frontier of practical LLM deployment and are maximally exposed to every dimension of context window degradation.
+    </p>
+    <p>
+      <span class="citation">Rath (2026)</span>, in "Agent Drift: Quantifying Behavioral Degradation in Multi-Agent LLM Systems," provides the most detailed empirical characterization of these dynamics. The study identifies three manifestations of agent drift: semantic drift (progressive deviation from original intent), coordination drift (breakdown in multi-agent consensus mechanisms), and behavioral drift (emergence of unintended strategies). Using a novel Agent Stability Index (ASI) computed across 12 dimensions, Rath found that detectable drift (ASI below 0.85) has a median onset of 73 interactions, with an interquartile range of 52 to 114. By 600 interactions, nearly 50% of agents exhibit semantic drift. Domain-specific vulnerability varies, with financial analysis showing the highest drift rate (53.2% by 500 interactions), followed by compliance monitoring (39.7%) and enterprise automation (31.8%).
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Stable Systems</th>
+          <th>Drifting Systems</th>
+          <th>Change</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Task success rate</td>
+          <td>87.3%</td>
+          <td>50.6%</td>
+          <td>-42.0%</td>
+        </tr>
+        <tr>
+          <td>Response accuracy</td>
+          <td>91.2%</td>
+          <td>68.5%</td>
+          <td>-24.9%</td>
+        </tr>
+        <tr>
+          <td>Completion time</td>
+          <td>8.7 min</td>
+          <td>14.2 min</td>
+          <td>+63.2%</td>
+        </tr>
+        <tr>
+          <td>Human interventions / task</td>
+          <td>0.31</td>
+          <td>0.98</td>
+          <td>+216.1%</td>
+        </tr>
+        <tr>
+          <td>Inter-agent conflicts / task</td>
+          <td>0.08</td>
+          <td>0.47</td>
+          <td>+487.5%</td>
+        </tr>
+        <tr>
+          <td>Token usage</td>
+          <td>12,400</td>
+          <td>18,900</td>
+          <td>+52.4%</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="table-caption">Table 2. Performance comparison between stable and drifting agentic systems. Data from Rath (2026).</p>
+
+    <p>
+      The practical consequences are severe. Task success rates drop from 87.3% to 50.6% in drifting systems, response accuracy falls by nearly 25%, completion times increase by 63%, and human interventions more than triple. Inter-agent conflicts increase by 487.5%, suggesting that drift does not merely degrade individual agent performance but disrupts the coordination fabric of multi-agent architectures. Crucially, drift accelerates over time: the ASI declines at 0.08 points per 50 interactions in the early phase (interactions 0-100) but at 0.19 points per 50 interactions in the later phase (interactions 300-400). This nonlinear acceleration means that degradation compounds rather than stabilizing, at least within the interaction windows studied.
+    </p>
+    <p>
+      Anthropic's engineering team (<span class="citation">2025</span>) crystallized the practical implication: context should be treated as a "precious, finite resource" with diminishing marginal returns. Typical agentic tasks require approximately 50 tool calls, each adding to the accumulated context. When tasks require more than 10 tool calls, accumulated context begins degrading performance. The team further established that tool design matters as much as prompt design: "Five well-designed tools outperform twenty overlapping ones," because each tool invocation adds to context burden and overlapping tool descriptions create the semantic distractors that the RAG literature has shown to be particularly harmful.
+    </p>
+    <p>
+      The compounding error problem represents perhaps the most consequential implication. Production data from 2025 indicates that a 2% misalignment introduced early in an agent chain can compound into a 40% failure rate by the end. This aligns with the multi-turn finding that LLMs do not recover from wrong turns, and suggests that agentic reliability depends more on early-chain accuracy and continuous drift monitoring than on raw model capability.
+    </p>
+
+    <!-- 7. MITIGATION STRATEGIES -->
+    <div class="section-heading">7. Mitigation Strategies</div>
+
+    <p>
+      Given the architectural nature of context window degradation, mitigation strategies must be understood as engineering interventions rather than solutions. No current approach eliminates the underlying effects; the goal is to manage degradation within acceptable bounds for specific deployment scenarios.
+    </p>
+
+    <div class="subsection-heading">7.1 Context Compression and Compaction</div>
+
+    <p>
+      Context compression operates on the principle that much of the accumulated context in long-running interactions is redundant or low-value. Anthropic's production compaction strategy (<span class="citation">2025</span>) passes message history through the model for summarization, preserving architectural decisions, unresolved bugs, and implementation details while discarding redundant tool outputs and verbose intermediate messages. The compressed context, combined with a small number of recently accessed files, enables continuation with minimal degradation.
+    </p>
+    <p>
+      The <span class="citation">ACON framework (2025)</span> formalizes compression as an optimization problem through paired trajectory analysis, comparing cases where full context succeeded but compressed context failed. This failure-driven approach to compression guideline development achieves 26-54% reduction in peak token usage while maintaining task performance, with a distilled compressor preserving 95% of teacher accuracy. <span class="citation">DAST (ACL Findings, 2025)</span> contributes context-aware dynamic compression that adapts the compression ratio based on content importance rather than applying uniform reduction. Additionally, <span class="citation">LongLLMLingua (2024)</span> demonstrated that context compression can improve accuracy by up to 21.4 percentage points at a 4x compression ratio, suggesting that removing noise from context is often more beneficial than retaining it.
+    </p>
+
+    <div class="subsection-heading">7.2 Structured External Memory</div>
+
+    <p>
+      External memory systems address context limitations by persisting critical information outside the model's context window entirely. Agents write structured notes to persistent files -- NOTES.md, MEMORY.md, or equivalent stores -- and retrieve them on demand. This approach, which proved effective in demonstrations such as an LLM playing Pokemon across thousands of game steps, decouples information persistence from context capacity. The key advantage is that only the information needed for the current step occupies context space, while the full history remains accessible through targeted retrieval.
+    </p>
+
+    <div class="subsection-heading">7.3 Multi-Agent Decomposition</div>
+
+    <p>
+      Multi-agent architectures mitigate context degradation through task decomposition. Specialized sub-agents handle focused tasks with clean, short context windows, each consuming tens of thousands of tokens internally but returning only 1,000-2,000 tokens of condensed summary to a main orchestrator. This separation of concerns prevents context pollution across tasks and ensures that no single agent must maintain coherence across the full interaction history. The orchestrator maintains high-level state while sub-agents handle detail-intensive operations.
+    </p>
+
+    <div class="subsection-heading">7.4 Reminder Injection</div>
+
+    <p>
+      <span class="citation">Dongre et al. (2025)</span> demonstrated that simple reminder interventions at strategic points in multi-turn conversations reliably reduce output divergence. In 10-turn conversations with reminders injected at turns 4 and 7, judge scores improved by 16.4% for LLaMA-3.1-8B, 18.2% for Qwen-2-7B, and 27.4% for LLaMA-3.1-70B. The finding that larger models benefit more from reminders is notable, suggesting that the capacity to course-correct exists but requires explicit prompting to activate. KL divergence from baseline was reduced by 7.5% to 11.8% through reminder injection alone.
+    </p>
+
+    <div class="subsection-heading">7.5 Adaptive Behavioral Anchoring</div>
+
+    <p>
+      Adaptive Behavioral Anchoring (ABA), as evaluated in <span class="citation">Rath (2026)</span>, augments prompts with few-shot exemplars drawn from the agent's baseline period and dynamically weighted by current drift metrics. As a standalone strategy, ABA achieves 70.4% drift reduction, making it the single most effective mitigation approach studied. When combined with Episodic Memory Consolidation (51.9% reduction) and Drift-Aware Routing (63.0% reduction), the combined approach achieves 81.5% drift reduction at 23% additional computational overhead. Systems incorporating explicit memory mechanisms also demonstrated 21% higher ASI retention, reinforcing the complementary benefit of combining memory-based and anchoring-based strategies.
+    </p>
+
+    <div class="subsection-heading">7.6 Information Placement Optimization</div>
+
+    <p>
+      Given the architectural inevitability of the U-shaped attention curve, a pragmatic class of mitigations exploits positional bias rather than attempting to eliminate it. Strategic placement of critical information at the beginning and end of context -- the positions where attention is naturally highest -- can improve retrieval by 15 or more percentage points (<span class="citation">2025</span>). For RAG systems, reordering retrieved documents to place the highest-scored items at the beginning and end of the input directly addresses the lost-in-the-middle effect. Attention calibration techniques have further improved accuracy on middle-positioned information by up to 15 percentage points, though these require model-level intervention rather than prompt-level adjustment.
+    </p>
+
+    <!-- 8. DISCUSSION -->
+    <div class="section-heading">8. Discussion</div>
+
+    <p>
+      The evidence surveyed in this paper converges on a conclusion that is simultaneously straightforward and consequential: context window degradation is a fundamental property of the current transformer architecture, not a training deficiency that will be resolved by scaling. The U-shaped attention bias is present at initialization (<span class="citation">Lost in the Middle at Birth, 2026</span>). Multi-turn degradation appears across all 15 models tested in the largest available study (<span class="citation">Microsoft/Salesforce, 2025</span>). Behavioral instability persists across all 25 models and over 2 million responses in the most comprehensive personality stability evaluation (<span class="citation">PERSIST, AAAI 2026</span>). And agentic drift manifests as a nonlinearly accelerating process that degrades task success rates by over 40% (<span class="citation">Rath, 2026</span>).
+    </p>
+    <p>
+      Several cross-cutting themes merit emphasis. First, the gap between retrieval and reasoning over long contexts is consistently underestimated. Models that achieve near-perfect Needle in a Haystack scores may still fail at multi-hop reasoning across the same context lengths, as demonstrated by <span class="citation">BABILong (2024)</span> and the more demanding RULER tasks. This gap has practical consequences: developers who validate agent capabilities using simple retrieval tests may be surprised by failures on production tasks that require integrating information from multiple positions within long contexts.
+    </p>
+    <p>
+      Second, the relationship between model scale and degradation resistance is more nuanced than commonly assumed. While larger models generally achieve higher absolute performance, they do not escape positional bias, multi-turn decay, or behavioral instability. In some cases, larger models exhibit greater identity drift (<span class="citation">Chen et al., 2024</span>) and benefit more from explicit mitigation interventions (<span class="citation">Dongre et al., 2025</span>), suggesting that the capacity for stability exists at scale but requires activation through engineering measures. The PERSIST finding that chain-of-thought reasoning increases variability while reducing perplexity further complicates the scaling picture: more capable reasoning may come at the cost of behavioral consistency.
+    </p>
+    <p>
+      Third, the bounded equilibrium model proposed by <span class="citation">Dongre et al. (2025)</span> offers a partial counterpoint to the most pessimistic interpretations of the evidence. If drift converges to a characteristic equilibrium rather than degrading without bound, then the engineering challenge becomes one of ensuring that the equilibrium is acceptable for the deployment context, rather than preventing degradation entirely. The variation in equilibrium divergence across models -- from 1.813 for GPT-4.1 to 20.386 for LLaMA-3.1-8B -- suggests that model selection is itself a mitigation strategy, and that smaller models in cost-optimized deployments may require more aggressive external mitigation than their larger counterparts.
+    </p>
+    <p>
+      Fourth, the industry trajectory appears to be shifting from expanding context windows to managing context more effectively. Anthropic's framing of context as a "precious, finite resource" reflects a maturation in the field's understanding. The emergence of production-grade compaction APIs, structured external memory patterns, and multi-agent decomposition architectures suggests that the next phase of LLM system engineering will focus less on how many tokens a model can accept and more on what configuration of context is most likely to produce the desired behavior. This shift has important implications for evaluation methodology: benchmarks that measure raw context capacity without accounting for effective utilization may be misleading.
+    </p>
+    <p>
+      Several limitations of the current evidence base warrant acknowledgment. First, many of the quantitative findings are based on synthetic benchmarks or controlled simulations rather than production deployments, and the extent to which laboratory degradation rates transfer to production conditions remains incompletely characterized. Second, the mitigation strategies reviewed in Section 7 have been evaluated primarily in isolation or in limited combinations; the interaction effects and failure modes of production-scale mitigation stacks are not well understood. Third, the rapidly evolving model landscape means that specific quantitative benchmarks have a limited shelf life, though the architectural arguments for persistent degradation patterns remain robust.
+    </p>
+
+    <!-- 9. CONCLUSION -->
+    <div class="section-heading">9. Conclusion</div>
+
+    <p>
+      This survey has presented a unified treatment of context window degradation in large language models, encompassing positional bias, effective utilization gaps, multi-turn instruction decay, behavioral drift, and agentic system failure. The evidence establishes that degradation is architecturally rooted, model-universal, and practically consequential, with instruction fidelity declining by 30-39%, behavioral consistency degrading by over 30% within 8-12 turns, and agentic task success rates falling from 87.3% to 50.6% in drifting systems.
+    </p>
+    <p>
+      These findings carry three principal implications for practitioners building agentic AI systems. First, context window size is a necessary but insufficient metric for evaluating model suitability; effective utilization, typically 50-65% of advertised capacity, is the relevant quantity. Second, long-running agent architectures must incorporate explicit drift mitigation -- context compression, external memory, multi-agent decomposition, reminder injection, or adaptive behavioral anchoring -- as core infrastructure rather than optional enhancements. Combined approaches achieving 81.5% drift reduction at 23% computational overhead represent the current state of the art. Third, evaluation frameworks must test for degradation under extended interaction conditions, not merely peak performance on short, clean inputs.
+    </p>
+    <p>
+      The fundamental challenge is that the transformer architecture, in its current form, does not natively support the sustained coherence that agentic applications demand. Until architectural alternatives emerge that decouple attention from positional bias, the engineering of reliable long-running AI systems will depend on the disciplined management of context as a finite, degradable resource. The organizations that build robust context management infrastructure will be the ones that successfully deploy AI agents in trust-critical, long-horizon environments. Those that rely on expanding context windows alone will continue to encounter the systematic failures documented throughout this work.
+    </p>
+
+    <!-- REFERENCES -->
+    <div class="references-section">
+      <div class="section-heading">References</div>
+      <ol class="references-list">
+        <li>
+          Liu, N. F., Lin, K., Hewitt, J., Paranjape, A., Bevilacqua, M., Petroni, F., &amp; Liang, P. (2024). Lost in the Middle: How Language Models Use Long Contexts. <em>Transactions of the Association for Computational Linguistics (TACL)</em>. https://arxiv.org/abs/2307.03172
+        </li>
+        <li>
+          Hsieh, C. P., Sun, S., et al. (2024). RULER: What's the Real Context Size of Your Long-Context Language Models? <em>COLM 2024</em>. https://arxiv.org/abs/2404.06654
+        </li>
+        <li>
+          Kamradt, G. (2024). Needle In A Haystack -- Pressure Testing LLMs. https://github.com/gkamradt/LLMTest_NeedleInAHaystack
+        </li>
+        <li>
+          Bai, Y., Lv, X., et al. (2024). LongBench: A Bilingual, Multitask Benchmark for Long Context Understanding. <em>ACL 2024</em>. https://arxiv.org/abs/2308.14508
+        </li>
+        <li>
+          BABILong Authors. (2024). BABILong: Testing the Limits of LLMs in Long Context Reasoning. https://github.com/booydar/babilong
+        </li>
+        <li>
+          Microsoft Research &amp; Salesforce Research. (2025). LLMs Get Lost In Multi-Turn Conversation. https://arxiv.org/abs/2505.06120
+        </li>
+        <li>
+          Dongre, V., et al. (2025). Drift No More? Context Equilibria in Multi-Turn LLM Interactions. <em>AAAI</em>. https://arxiv.org/abs/2510.07777
+        </li>
+        <li>
+          Du, Y., et al. (2025). Long-Context Performance Degradation in Modern Language Models. <em>EMNLP 2025</em>.
+        </li>
+        <li>
+          Chroma Research. (2025). Context Rot: Evaluating Long-Context Degradation Across Frontier Models.
+        </li>
+        <li>
+          Chen, H., et al. (2024). Examining Identity Drift in Conversations of LLM Agents. https://arxiv.org/abs/2412.00804
+        </li>
+        <li>
+          PERSIST Authors. (2025). Persistent Instability in LLM's Personality Measurements: Effects of Scale, Reasoning, and Conversation History. <em>AAAI 2026</em>. https://arxiv.org/abs/2508.04826
+        </li>
+        <li>
+          Rath, A. (2026). Agent Drift: Quantifying Behavioral Degradation in Multi-Agent LLM Systems Over Extended Interactions. https://arxiv.org/abs/2601.04170
+        </li>
+        <li>
+          Lost in the Middle at Birth Authors. (2026). An Exact Theory of Causal Transformer Position Bias. https://arxiv.org/html/2603.10123
+        </li>
+        <li>
+          When Attention Sink Emerges in Language Models: An Empirical View. (2025). <em>ICLR 2025</em>. https://arxiv.org/abs/2603.06591
+        </li>
+        <li>
+          Layer-wise Positional Bias in Transformer Architectures. (2026). https://arxiv.org/html/2601.04098
+        </li>
+        <li>
+          Intent Mismatch Authors. (2026). Intent Mismatch Causes LLMs to Get Lost in Multi-Turn Conversation. https://arxiv.org/abs/2602.07338
+        </li>
+        <li>
+          Anthropic. (2025). Effective Context Engineering for AI Agents. https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
+        </li>
+        <li>
+          Anthropic. (2025). Effective Harnesses for Long-Running Agents. https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents
+        </li>
+        <li>
+          ACON Authors. (2025). Optimizing Context Compression for Long-horizon LLM Agents. https://arxiv.org/html/2510.00615v1
+        </li>
+        <li>
+          DAST Authors. (2025). Context-Aware Dynamic Compression for Long-Context Language Models. <em>ACL Findings 2025</em>.
+        </li>
+        <li>
+          LongLLMLingua Authors. (2024). LongLLMLingua: Accelerating and Enhancing LLMs in Long Context Scenarios via Prompt Compression.
+        </li>
+        <li>
+          Exploiting Primacy Bias for Enhanced Long-Context Retrieval. (2025). https://arxiv.org/html/2507.13949v1
+        </li>
+        <li>
+          100-LongBench Authors. (2025). Questioning Long-Context Benchmarks. <em>ACL Findings 2025</em>. https://arxiv.org/abs/2505.19293
+        </li>
+        <li>
+          NOLIMA Authors. (2025). Beyond Literal Matching in Long-Context Evaluation.
+        </li>
+        <li>
+          U-NIAH Authors. (2025). A Unified Framework for LLM and RAG Long-Context Evaluation.
+        </li>
+        <li>
+          Harvard Data Science Review. (2024). How Is ChatGPT's Behavior Changing Over Time? <em>Harvard Data Science Review</em>, Spring 2024.
+        </li>
+        <li>
+          Chen, L., et al. (2025). Recurring Failure Archetypes in Agentic Systems. https://arxiv.org/abs/2512.07497
+        </li>
+        <li>
+          Systematic Review of LLM Failure Modes. (2025). https://arxiv.org/abs/2511.19933
+        </li>
+      </ol>
+    </div>
+
+  </article>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <span>&copy; 2025&ndash;2026 Presba, LLC</span>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/research">Research</a>
+      <a href="/#contact">Contact</a>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu
+    const btn = document.getElementById('menu-btn');
+    const mm = document.getElementById('mobile-menu');
+    btn.addEventListener('click', () => mm.classList.toggle('open'));
+    function closeMobile() { mm.classList.remove('open'); }
+  </script>
+
+</body>
+</html>

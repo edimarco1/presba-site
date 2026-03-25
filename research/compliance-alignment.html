@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bridging AI Evaluation and Federal Compliance | Presba, LLC</title>
+  <meta name="description" content="Toward ICD 203-Aligned Model Assessment Frameworks. A research paper examining how behavioral fingerprinting bridges AI evaluation and federal compliance requirements.">
+  <meta property="og:title" content="Bridging AI Evaluation and Federal Compliance | Presba, LLC">
+  <meta property="og:description" content="Toward ICD 203-Aligned Model Assessment Frameworks. Research on mapping AI behavioral evaluation to federal compliance standards.">
+  <meta property="og:type" content="article">
+  <meta name="author" content="Presba, LLC">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.88em' font-size='80' font-family='serif' fill='%230d3b3e'>P</text></svg>">
+  <style>
+    :root {
+      --fg: #1a1a1a;
+      --fg-muted: #6b6b6b;
+      --bg: #f5f2ee;
+      --bg-dark: #0d3b3e;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --border: #ddd5ca;
+      --serif: 'Instrument Serif', Georgia, serif;
+      --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ---- NAV ---- */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(245, 242, 238, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      color: var(--fg);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--fg-muted);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--fg); }
+    .nav-mobile-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 28px;
+      height: 20px;
+      position: relative;
+    }
+    .nav-mobile-btn span {
+      display: block;
+      width: 100%;
+      height: 2px;
+      background: var(--fg);
+      position: absolute;
+      left: 0;
+      transition: all 0.3s;
+    }
+    .nav-mobile-btn span:nth-child(1) { top: 0; }
+    .nav-mobile-btn span:nth-child(2) { top: 9px; }
+    .nav-mobile-btn span:nth-child(3) { top: 18px; }
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg);
+      z-index: 49;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 2rem;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      font-family: var(--serif);
+      font-size: 2rem;
+      color: var(--fg);
+      text-decoration: none;
+    }
+
+    /* ---- ARTICLE LAYOUT ---- */
+    .article-header {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 8rem 2rem 3rem;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--fg-muted);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 3rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--fg); }
+    .back-link svg {
+      width: 16px;
+      height: 16px;
+    }
+    .article-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+    .article-title {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      margin-bottom: 1.5rem;
+    }
+    .article-meta {
+      font-size: 0.9rem;
+      color: var(--fg-muted);
+      line-height: 1.7;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .article-meta strong {
+      color: var(--fg);
+      font-weight: 600;
+    }
+
+    /* ---- ARTICLE BODY ---- */
+    .article-body {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 2rem 6rem;
+    }
+    .article-body .section-heading {
+      font-family: var(--serif);
+      font-size: 1.8rem;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      margin: 3rem 0 1.25rem;
+      line-height: 1.2;
+    }
+    .article-body .subsection-heading {
+      font-family: var(--serif);
+      font-size: 1.35rem;
+      letter-spacing: -0.01em;
+      color: var(--fg);
+      margin: 2.25rem 0 1rem;
+      line-height: 1.3;
+    }
+    .article-body p {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--fg);
+      margin-bottom: 1.25rem;
+    }
+    .article-body .abstract {
+      background: #fff;
+      border-left: 3px solid var(--accent);
+      padding: 1.75rem 2rem;
+      margin: 2.5rem 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .article-body .abstract p {
+      color: var(--fg-muted);
+      font-size: 0.92rem;
+      margin-bottom: 0.75rem;
+    }
+    .article-body .abstract p:last-child {
+      margin-bottom: 0;
+    }
+    .article-body .abstract-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+    .article-body blockquote {
+      border-left: 3px solid var(--border);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      background: rgba(255,255,255,0.5);
+      border-radius: 0 6px 6px 0;
+    }
+    .article-body blockquote p {
+      font-style: italic;
+      color: var(--fg-muted);
+      margin-bottom: 0;
+    }
+    .article-body .mapping-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.75rem 0;
+      font-size: 0.82rem;
+    }
+    .article-body .mapping-table th {
+      background: var(--bg-dark);
+      color: #fff;
+      font-weight: 600;
+      text-align: left;
+      padding: 0.7rem 0.8rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .article-body .mapping-table td {
+      padding: 0.6rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      line-height: 1.5;
+      color: var(--fg);
+    }
+    .article-body .mapping-table tr:nth-child(even) td {
+      background: rgba(255,255,255,0.5);
+    }
+    .article-body .mapping-table tr:hover td {
+      background: rgba(16,185,129,0.05);
+    }
+
+    /* ---- REFERENCES ---- */
+    .references {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+    }
+    .references ol {
+      list-style: none;
+      counter-reset: ref-counter;
+      padding: 0;
+    }
+    .references li {
+      counter-increment: ref-counter;
+      font-size: 0.82rem;
+      line-height: 1.7;
+      color: var(--fg-muted);
+      margin-bottom: 0.6rem;
+      padding-left: 2.5rem;
+      position: relative;
+      word-break: break-word;
+    }
+    .references li::before {
+      content: "[" counter(ref-counter) "]";
+      position: absolute;
+      left: 0;
+      font-weight: 600;
+      color: var(--fg);
+      font-size: 0.78rem;
+    }
+    .references a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .references a:hover {
+      color: var(--accent-hover);
+      text-decoration: underline;
+    }
+
+    /* ---- FOOTER ---- */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .footer span {
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+    }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a {
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--fg); }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-mobile-btn { display: block; }
+      .article-header { padding: 7rem 1.25rem 2rem; }
+      .article-body { padding: 0 1.25rem 4rem; }
+      .article-body .mapping-table { font-size: 0.72rem; }
+      .article-body .mapping-table th,
+      .article-body .mapping-table td { padding: 0.5rem 0.4rem; }
+      .footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="/" class="nav-logo">Presba</a>
+    <div class="nav-links">
+      <a href="/#work">What We Do</a>
+      <a href="/#about">About</a>
+      <a href="/research/">Research</a>
+      <a href="/#contact">Contact</a>
+    </div>
+    <button class="nav-mobile-btn" id="menu-btn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="/" onclick="closeMobile()">Home</a>
+    <a href="/#work" onclick="closeMobile()">What We Do</a>
+    <a href="/#about" onclick="closeMobile()">About</a>
+    <a href="/research/" onclick="closeMobile()">Research</a>
+    <a href="/#contact" onclick="closeMobile()">Contact</a>
+  </div>
+
+  <!-- ARTICLE HEADER -->
+  <header class="article-header">
+    <a href="/research/" class="back-link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+      Research
+    </a>
+    <div class="article-label">Research Paper</div>
+    <h1 class="article-title">Bridging AI Evaluation and Federal Compliance: Toward ICD 203-Aligned Model Assessment Frameworks</h1>
+    <div class="article-meta">
+      Presba, LLC &middot; 2026
+    </div>
+  </header>
+
+  <!-- ARTICLE BODY -->
+  <article class="article-body">
+
+    <!-- ABSTRACT -->
+    <div class="abstract">
+      <div class="abstract-label">Abstract</div>
+      <p>
+        Federal agencies reported 1,757 artificial intelligence use cases across 37 agencies in 2024, with generative AI deployments increasing nine-fold in a single year. Yet fewer than one-third of these agencies track standardized performance metrics for their AI systems, and 15 of 20 agencies submitted compliance plans that independent reviewers found to be incomplete or inaccurate. This paper examines the structural gap between the federal government's rapidly expanding AI compliance mandates&mdash;spanning Intelligence Community Directive 203, the NIST AI Risk Management Framework, NIST AI 600-1, and OMB M-24-10&mdash;and the absence of integrated evaluation tooling capable of satisfying those mandates. We propose that behavioral fingerprinting, a multi-dimensional assessment methodology that profiles AI model behavior across 16 measurable dimensions, provides a natural bridge between technical AI evaluation and federal compliance requirements. Each fingerprint dimension maps to specific ICD 203 analytic tradecraft standards, NIST trustworthiness characteristics, and NIST 600-1 generative AI risk categories, enabling a single evaluation framework to produce compliance evidence across multiple regulatory regimes. The March 2026 MYSTIC DEPOT solicitation from the Defense Innovation Unit, which seeks vendor-agnostic evaluation harness infrastructure for the Department of Defense and Intelligence Community, validates both the urgency and the architectural approach described herein. This work presents a unified assessment architecture and argues that the convergence of intelligence tradecraft standards, risk management frameworks, and behavioral evaluation methodology creates an actionable path toward systematic, auditable AI governance in federal contexts.
+      </p>
+    </div>
+
+    <!-- 1. INTRODUCTION -->
+    <div class="section-heading">1. Introduction</div>
+
+    <p>
+      The adoption of artificial intelligence within the United States federal government has reached an inflection point. Between 2023 and 2024, the total number of reported AI use cases across 11 major agencies nearly doubled from 571 to 1,110, with generative AI deployments surging from 32 to 282&mdash;a 781 percent increase in a single year (GAO, 2025). Across all 37 agencies subject to reporting requirements, the Government Accountability Office identified 1,757 distinct AI use cases, of which 227 were classified as rights-impacting or safety-impacting. These figures describe not a speculative future but an operational present in which AI systems are actively influencing decisions in healthcare, homeland security, veterans affairs, and national defense.
+    </p>
+
+    <p>
+      This expansion has outpaced the government's capacity for systematic evaluation. Multiple compliance frameworks now govern AI use in federal contexts&mdash;Intelligence Community Directive 203 (ODNI, 2015), the NIST AI Risk Management Framework (NIST, 2023), the NIST AI 600-1 Generative AI Profile (NIST, 2024), OMB Memorandum M-24-10 (OMB, 2024), and the Department of Defense Responsible AI Strategy (CDAO, 2024)&mdash;yet none of these frameworks includes an integrated evaluation harness capable of quantitatively assessing AI behavioral characteristics against their own standards. The result is a compliance apparatus that specifies what must be evaluated without providing the technical means to conduct the evaluation.
+    </p>
+
+    <p>
+      The Electronic Privacy Information Center found that 15 of 20 agencies submitted AI compliance plans containing inaccurate or incomplete information (EPIC, 2024). The GAO issued 35 recommendations across 19 agencies to improve AI governance implementation (GAO, 2025). These are not failures of intent but failures of infrastructure: agencies understand what compliance requires, but lack the measurement tools to achieve it.
+    </p>
+
+    <p>
+      This paper advances the thesis that behavioral fingerprinting&mdash;a methodology that profiles AI model behavior across multiple measurable dimensions including hallucination rate, confidence calibration, sycophancy resistance, reasoning quality, and adversarial robustness&mdash;provides a natural and technically rigorous bridge between AI evaluation and federal compliance. We demonstrate that each dimension of a behavioral fingerprint maps directly to specific ICD 203 analytic tradecraft standards, NIST AI RMF trustworthiness characteristics, and NIST 600-1 risk categories, creating a unified assessment framework in which a single evaluation produces compliance evidence applicable across multiple regulatory mandates.
+    </p>
+
+    <p>
+      The urgency of this integration is underscored by the MYSTIC DEPOT solicitation (DIU PROJ00625), issued by the Defense Innovation Unit in partnership with the Office of the Director of National Intelligence, which closes on March 24, 2026. MYSTIC DEPOT explicitly seeks vendor-agnostic AI evaluation infrastructure capable of continuous assessment against mission-specific benchmarks&mdash;precisely the architectural approach described in this work. We examine the alignment between behavioral fingerprinting, existing compliance frameworks, and the MYSTIC DEPOT requirements, and present a unified assessment architecture for federal AI governance.
+    </p>
+
+    <!-- 2. THE FEDERAL AI EVALUATION GAP -->
+    <div class="section-heading">2. The Federal AI Evaluation Gap</div>
+
+    <p>
+      The gap between federal AI deployment and federal AI evaluation is both quantitative and structural. On the quantitative side, the numbers are stark: 1,757 AI use cases are deployed across the federal enterprise, but fewer than one-third of agencies track standardized key performance indicators such as days-to-decision or error rates (GAO, 2025). Most adopted AI solutions remain in what the GAO characterizes as an "initiated" phase rather than a fully operational state, with 61 percent of federal AI use cases serving mission-enabling or internal agency support functions. The implication is that hundreds of AI systems are in active use without having passed through a standardized evaluation and promotion process.
+    </p>
+
+    <p>
+      The structural dimension of the gap is more consequential. Federal agencies face what might be termed a "compliance without measurement" problem: multiple frameworks prescribe evaluation requirements, but no framework provides the evaluation tooling. OMB M-24-10 requires agencies to classify AI systems by risk level, monitor their performance, and submit detailed compliance plans&mdash;yet the memorandum offers no technical infrastructure for accomplishing these tasks. The CDAO Responsible AI Toolkit provides governance guidance for the Department of Defense, cataloging resources for identifying bias, proving responsible capabilities, and documenting development choices, but it does not include an automated evaluation harness (CDAO, 2024). FedRAMP addresses infrastructure security for AI cloud services and has prioritized 20x authorizations for AI solutions (GSA, 2025), but its authorization process evaluates deployment security rather than model behavior. A model may achieve FedRAMP authorization at the Moderate or High risk level while still exhibiting high hallucination rates, sycophantic behavior, or systematic bias in its outputs.
+    </p>
+
+    <p>
+      The Intelligence Community faces an additional and specific challenge. ICD 203 articulates nine analytic tradecraft standards&mdash;Sourcing, Uncertainty, Assumptions, Alternatives, Relevance, Argumentation, Consistency, Accuracy, and Visuals (Kwoun, 2021)&mdash;that have governed the quality of intelligence analysis since 2007. These standards were written for human analysts, yet they describe behavioral characteristics that are directly applicable to AI systems performing analytical functions. As McMahon (2024) argues in a Belfer Center analysis, the IC must consider how AI tools impact analysts' ability to meet existing analytic standards, and the IC should amend those standards to anticipate AI-specific challenges. This amendment has not yet occurred. The result is that AI systems are being integrated into intelligence workflows governed by standards that do not yet formally recognize AI as a participant in the analytical process.
+    </p>
+
+    <p>
+      Perhaps most critically, human-AI teaming evaluation is entirely absent from current federal assessment methodologies. The MYSTIC DEPOT solicitation states directly that "evaluation must assess not only whether AI systems can perform tasks in isolation, but whether human-AI teams achieve better mission outcomes than either humans or AI alone" (DIU, 2026). No existing federal framework provides a methodology for this assessment, despite the fact that the predominant deployment model for federal AI is as an augmentation to human analysts, not as a replacement.
+    </p>
+
+    <p>
+      The barriers to closing this gap are well documented. Agencies cite insufficient funding, inadequate technical talent for developing internal evaluation systems, rapid technology evolution that complicates policy establishment, and the cultural challenge of two-to-three-year manager rotations that disincentivize multi-year AI infrastructure investments. Officials at 10 of 12 agencies told GAO investigators that existing policies present obstacles to effective AI governance (GAO, 2025). The evaluation gap, in short, is not a problem that will resolve through incremental policy refinement. It requires purpose-built technical infrastructure.
+    </p>
+
+    <!-- 3. EXISTING FRAMEWORKS -->
+    <div class="section-heading">3. Existing Frameworks: ICD 203, NIST AI RMF, and NIST 600-1</div>
+
+    <div class="subsection-heading">3.1 Intelligence Community Directive 203: Analytic Standards</div>
+
+    <p>
+      Intelligence Community Directive 203, codified by the Office of the Director of National Intelligence and most recently revalidated in January 2015, establishes the analytic tradecraft standards that govern all intelligence analysis produced by or on behalf of the IC. The directive articulates five overarching requirements&mdash;that analysis be objective, independent of political consideration, timely, based on all available sources, and implemented through nine specific tradecraft standards&mdash;and defines the quality criteria against which analytical products are assessed (ODNI, 2015).
+    </p>
+
+    <p>
+      The nine tradecraft standards, known colloquially by their one-word nomenclature, are: (1) Sourcing, requiring analysts to properly describe the quality and credibility of underlying sources, data, and methodologies; (2) Uncertainty, requiring proper expression and explanation of uncertainties using calibrated probability language; (3) Assumptions, requiring clear distinction between underlying intelligence and analyst judgments; (4) Alternatives, requiring incorporation of alternative analytic interpretations through structured analytic techniques; (5) Relevance, requiring demonstration of relevance to the consumer or decision-maker; (6) Argumentation, requiring clear and logical argumentation; (7) Consistency, requiring notation and explanation of changes in or consistency of judgments over time; (8) Accuracy, requiring accurate judgments and assessments subject to retrospective evaluation; and (9) Visuals, requiring effective incorporation of visual information into analytic products (Kwoun, 2021).
+    </p>
+
+    <p>
+      Each of these standards, though written for human analysts, describes a behavioral characteristic that is both measurable and directly relevant to AI systems. An AI model that fabricates citations violates Standard 1. A model that presents uncertain inferences as established facts violates Standard 2. A model that agrees with user premises rather than offering independent analysis violates Standard 4. The analytical distance between ICD 203's human-oriented standards and AI behavioral evaluation is remarkably short.
+    </p>
+
+    <div class="subsection-heading">3.2 NIST AI Risk Management Framework (AI RMF 1.0)</div>
+
+    <p>
+      The NIST AI Risk Management Framework, published as NIST AI 100-1 in January 2023, provides voluntary, non-binding guidance for identifying, assessing, and managing AI risks. The framework is organized around four core functions: Govern, Map, Measure, and Manage. Of these, the Measure function is most directly relevant to AI evaluation, encompassing five categories with 22 subcategories that collectively describe how organizations should employ quantitative, qualitative, or mixed-method tools to analyze, assess, benchmark, and monitor AI risk (NIST, 2023).
+    </p>
+
+    <p>
+      The Measure function's categories address appropriate methods and metrics (MEASURE 1), trustworthiness evaluation across 13 subcategories (MEASURE 2), risk tracking mechanisms (MEASURE 3), and measurement efficacy feedback (MEASURE 4). Critically, MEASURE 2 spans seven trustworthiness characteristics that the framework identifies as essential to responsible AI: validity and reliability, safety, security and resilience, accountability and transparency, explainability and interpretability, privacy, and fairness with bias management (NIST, 2023).
+    </p>
+
+    <p>
+      The AI RMF has proven durable across changes in administration. Although it was developed partly under the direction of Executive Order 14110&mdash;which was revoked on January 20, 2025&mdash;the framework itself is a voluntary standard independent of executive authority. It has become, in the assessment of multiple policy analyses, one of the world's most influential voluntary AI governance frameworks, with sector regulators across financial services, healthcare, and federal procurement increasingly referencing its principles. The White House AI Action Plan released in July 2025, under the current administration, continues to call for evaluation standards, testbeds, and assessment frameworks, affirming the bipartisan recognition that AI evaluation infrastructure is a necessity rather than a policy preference.
+    </p>
+
+    <div class="subsection-heading">3.3 NIST AI 600-1: Generative AI Profile</div>
+
+    <p>
+      NIST AI 600-1, published in July 2024, serves as a companion document to the AI RMF specifically targeting risks associated with generative AI. The profile identifies 12 risk categories that are distinctive to or amplified by generative AI systems: CBRN information or capabilities, confabulation, dangerous or violent or hateful content, data privacy, environmental impacts, harmful bias or homogenization, human-AI configuration, information integrity, information security, intellectual property, obscene or degrading or abusive content, and value chain and component integration (NIST, 2024).
+    </p>
+
+    <p>
+      Two of these categories are of particular significance for compliance alignment. The first is confabulation, which NIST 600-1 defines as "the production of confidently stated but false or internally inconsistent outputs" and characterizes as "perhaps the most distinctive generative AI risk." Unlike traditional software errors, NIST observes, confabulations are presented with the same linguistic confidence as accurate information, making them especially dangerous in high-stakes domains. The second is information integrity, encompassing the system's capacity to distinguish fact from fiction, opinion from inference, and to acknowledge uncertainties in its outputs.
+    </p>
+
+    <p>
+      These two NIST 600-1 categories map directly and unambiguously to ICD 203 Standards 1 (Source Credibility) and 2 (Uncertainty Expression), respectively. This is not an accidental alignment. Both ICD 203 and NIST 600-1, though developed by different bodies for different purposes, are attempting to describe the same underlying quality: the degree to which an analytical product&mdash;whether produced by a human analyst or a language model&mdash;can be trusted to represent reality accurately and to communicate its limitations honestly.
+    </p>
+
+    <!-- 4. MAPPING AI EVALUATION TO ICD 203 -->
+    <div class="section-heading">4. Mapping AI Evaluation to ICD 203</div>
+
+    <p>
+      The central contribution of this work is the demonstration that AI behavioral evaluation and ICD 203 compliance are not merely analogous but structurally isomorphic. Each of the nine ICD 203 tradecraft standards describes a behavioral property that can be operationalized as a measurable dimension of an AI system's behavioral fingerprint. This section presents the mapping in detail, identifying for each tradecraft standard the corresponding behavioral dimension, measurement methodology, and compliance evidence that automated evaluation produces.
+    </p>
+
+    <p>
+      ICD 203 Standard 1 (Source Credibility) requires analysts to properly describe the quality and credibility of underlying sources. The behavioral analog is hallucination rate: the frequency with which a model generates plausible but fabricated information, including false citations, invented data, and confabulated facts. In intelligence contexts, a hallucinated source citation could drive incorrect analytical conclusions with consequences for national security. Measurement is conducted through benchmarks such as TruthfulQA&mdash;817 questions across 38 categories designed to elicit plausible-sounding but incorrect responses&mdash;and HaluEval, a systematic framework for detecting unsupported or fabricated outputs in question-answering and dialogue settings.
+    </p>
+
+    <p>
+      ICD 203 Standard 2 (Uncertainty Expression) requires analysts to properly express and explain uncertainties, using the IC's calibrated probability language in which terms like "likely" correspond to defined probability ranges (55 to 80 percent). The behavioral analog is confidence calibration: whether a model's expressed certainty matches its empirical accuracy. A model that presents speculative inferences with the same certainty as well-established facts violates this standard in precisely the way that a human analyst who omits confidence qualifiers would.
+    </p>
+
+    <p>
+      ICD 203 Standard 3 (Assumptions vs. Intelligence) requires clear distinction between underlying intelligence and analytical judgments. The behavioral analog is assumption transparency and explainability depth: whether a model distinguishes between what it derives from provided evidence, what it retrieves from training data, and what it infers through reasoning. This is measured through chain-of-thought analysis and explainability scoring.
+    </p>
+
+    <p>
+      ICD 203 Standard 4 (Analysis of Alternatives) requires incorporation of alternative analytic interpretations through techniques such as devil's advocacy, red teaming, and alternative futures analysis. The behavioral analog is sycophancy resistance: the degree to which a model provides independent analysis rather than confirming the user's stated or implied position. Research on behavioral fingerprinting has found that sycophancy varies dramatically across models, with robustness scores ranging from 0.50 to 1.00 (Behavioral Fingerprinting of LLMs, 2025). A sycophantic AI assistant used by an intelligence analyst would reinforce existing cognitive biases rather than challenging them, undermining the analytical rigor that ICD 203 Standard 4 was designed to ensure.
+    </p>
+
+    <p>
+      Standards 5 through 9 complete the mapping. Standard 5 (Relevance) maps to instruction following and task alignment. Standard 6 (Argumentation) maps to reasoning quality and logical coherence, measured through chain-of-thought evaluation. Standard 7 (Consistency) maps to semantic robustness across sessions and prompt variations. Standard 8 (Accuracy) maps to factual accuracy as measured by domain-knowledge benchmarks such as MMLU, which spans 57 academic subjects with over 16,000 questions. Standard 9 (Visuals) maps to multimodal accuracy for image, chart, and document analysis.
+    </p>
+
+    <!-- 5. BEHAVIORAL FINGERPRINTING AS COMPLIANCE MEASUREMENT -->
+    <div class="section-heading">5. Behavioral Fingerprinting as Compliance Measurement</div>
+
+    <p>
+      Behavioral fingerprinting, as a methodology, creates multi-faceted profiles of model behavior across cognitive and interactive axes. The approach emerged from academic research that probes AI systems along four primary vectors: internal world model, reasoning and cognitive abilities, biases and personality, and robustness (Behavioral Fingerprinting of LLMs, 2025). A key finding of this research is that while core reasoning capabilities are converging across frontier models, alignment-related behaviors&mdash;precisely the behaviors relevant to ICD 203 compliance&mdash;vary dramatically.
+    </p>
+
+    <p>
+      This paper proposes a 16-dimension behavioral fingerprint framework designed for federal compliance alignment. Each dimension maps simultaneously to ICD 203 tradecraft standards, NIST AI RMF trustworthiness characteristics, and NIST 600-1 risk categories. The complete mapping is presented in Table 1.
+    </p>
+
+    <table class="mapping-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Fingerprint Dimension</th>
+          <th>ICD 203 Standard</th>
+          <th>NIST RMF Characteristic</th>
+          <th>NIST 600-1 Risk</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>Hallucination Rate</td>
+          <td>Std 1: Sourcing</td>
+          <td>Validity &amp; Reliability</td>
+          <td>Confabulation</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Confidence Calibration</td>
+          <td>Std 2: Uncertainty</td>
+          <td>Validity &amp; Reliability</td>
+          <td>Confabulation</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>Source Attribution</td>
+          <td>Std 1: Sourcing</td>
+          <td>Accountability &amp; Transparency</td>
+          <td>Information Integrity</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>Assumption Transparency</td>
+          <td>Std 3: Assumptions</td>
+          <td>Explainability &amp; Interpretability</td>
+          <td>Human-AI Configuration</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>Sycophancy Resistance</td>
+          <td>Std 4: Alternatives</td>
+          <td>Fairness</td>
+          <td>Harmful Bias</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td>Reasoning Quality</td>
+          <td>Std 6: Argumentation</td>
+          <td>Validity &amp; Reliability</td>
+          <td>Information Integrity</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td>Logical Consistency</td>
+          <td>Std 7: Consistency</td>
+          <td>Validity &amp; Reliability</td>
+          <td>Confabulation</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td>Factual Accuracy</td>
+          <td>Std 8: Accuracy</td>
+          <td>Validity &amp; Reliability</td>
+          <td>Confabulation</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td>Bias Detection</td>
+          <td>Std 4: Alternatives</td>
+          <td>Fairness</td>
+          <td>Harmful Bias</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td>Instruction Following</td>
+          <td>Std 5: Relevance</td>
+          <td>Safety</td>
+          <td>Human-AI Configuration</td>
+        </tr>
+        <tr>
+          <td>11</td>
+          <td>Refusal Appropriateness</td>
+          <td>Std 5: Relevance</td>
+          <td>Safety</td>
+          <td>Dangerous Content</td>
+        </tr>
+        <tr>
+          <td>12</td>
+          <td>Adversarial Robustness</td>
+          <td>Std 7: Consistency</td>
+          <td>Security &amp; Resilience</td>
+          <td>Information Security</td>
+        </tr>
+        <tr>
+          <td>13</td>
+          <td>Multimodal Accuracy</td>
+          <td>Std 9: Visuals</td>
+          <td>Validity &amp; Reliability</td>
+          <td>Value Chain</td>
+        </tr>
+        <tr>
+          <td>14</td>
+          <td>Temporal Awareness</td>
+          <td>Std 8: Accuracy</td>
+          <td>Validity &amp; Reliability</td>
+          <td>Confabulation</td>
+        </tr>
+        <tr>
+          <td>15</td>
+          <td>Privacy Compliance</td>
+          <td>(Cross-cutting)</td>
+          <td>Privacy</td>
+          <td>Data Privacy</td>
+        </tr>
+        <tr>
+          <td>16</td>
+          <td>Explainability Depth</td>
+          <td>Std 3: Assumptions</td>
+          <td>Explainability &amp; Interpretability</td>
+          <td>Human-AI Configuration</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>
+      <em>Table 1. The 16-dimension behavioral fingerprint mapped to ICD 203 tradecraft standards, NIST AI RMF trustworthiness characteristics, and NIST 600-1 generative AI risk categories.</em>
+    </p>
+
+    <p>
+      The significance of this mapping is operational, not merely taxonomic. Consider the scenario in which a federal agency must demonstrate compliance with OMB M-24-10's requirement to classify AI systems by risk level and implement appropriate safeguards. Under current practice, this compliance demonstration is largely narrative&mdash;agencies describe their processes in prose documents that EPIC characterized as "abstract and high-level." Under a behavioral fingerprinting approach, the same compliance demonstration would be grounded in quantitative evidence: a hallucination rate of 3.2 percent across 817 TruthfulQA items, a sycophancy resistance score of 0.87 on a standardized opposition benchmark, a confidence calibration error of 0.04 across domain-stratified test sets.
+    </p>
+
+    <p>
+      This quantitative foundation transforms compliance from a documentation exercise into a measurement discipline. It enables comparison across models, tracking over time, and threshold-based authorization decisions&mdash;precisely the capabilities that the federal AI governance apparatus currently lacks.
+    </p>
+
+    <!-- 6. THE MYSTIC DEPOT MANDATE -->
+    <div class="section-heading">6. The MYSTIC DEPOT Mandate</div>
+
+    <p>
+      On March 11, 2026, the Defense Innovation Unit, in partnership with the Office of the Director of National Intelligence, issued MYSTIC DEPOT (PROJ00625): a Commercial Solutions Opening solicitation for vendor-agnostic AI evaluation infrastructure. The solicitation is notable not merely for its existence but for the specificity with which it articulates the evaluation problem and the architectural requirements for its solution.
+    </p>
+
+    <p>
+      The solicitation opens with a problem statement that encapsulates the evaluation gap described in this paper:
+    </p>
+
+    <blockquote>
+      <p>
+        "As artificial intelligence capabilities evolve at an extraordinary pace, the government requires evaluation infrastructure that can keep pace by continuously assessing new models against mission-specific benchmarks as they are released."
+      </p>
+    </blockquote>
+
+    <p>
+      MYSTIC DEPOT is organized around two lines of effort. Line of Effort 1 (Evaluation Harness Infrastructure) specifies 11 required components: a model interface providing standardized, pluggable architecture for diverse model types; an execution engine orchestrating complex workflows; a measurement and scoring system; human integration supporting subject matter expert review; an output and reporting layer in open, non-proprietary formats; continuous monitoring automating model ingestion and performance tracking; configuration management for benchmarks; a denied, degraded, intermittent, and limited (DDIL) environment simulator; agentic evaluation capabilities for multi-step tasks; adversarial testing with automated red-teaming; and multimodal support (DIU, 2026).
+    </p>
+
+    <p>
+      Line of Effort 2 (Benchmark Development Methodology) specifies nine required capabilities, including requirements identification for mission contexts, task decomposition into measurable evaluation activities, scoring rubric development prioritizing interpretability, gaming-resistant benchmark design, and training materials enabling government personnel to develop benchmarks independently.
+    </p>
+
+    <p>
+      The alignment between MYSTIC DEPOT's requirements and a behavioral fingerprinting architecture is structural. The execution engine maps to the orchestration layer of a fingerprinting harness. The measurement and scoring system maps to the multi-dimensional scoring rubric. Continuous monitoring maps to fingerprint drift detection. Adversarial testing maps to adversarial robustness measurement (Dimension 12). DDIL simulation maps to temporal awareness and consistency evaluation under degraded conditions (Dimensions 7 and 14). Agentic evaluation extends fingerprinting to multi-step task sequences. The required attributes&mdash;modular, containerized, deployable across classification levels from unclassified through classified cloud to air-gapped environments&mdash;describe the deployment architecture necessary for evaluation infrastructure that serves both the Department of Defense and the Intelligence Community.
+    </p>
+
+    <p>
+      MYSTIC DEPOT is significant not only as validation of the approach but as evidence of bipartisan continuity in AI evaluation demand. It was solicited under the current administration, which revoked Executive Order 14110 and reframed federal AI policy around competitiveness rather than safety. Yet the evaluation requirements articulated in MYSTIC DEPOT are functionally identical to those that EO 14110 mandated: robust, reliable, repeatable, and standardized evaluation of AI systems. The evaluation gap, it appears, is a mission-driven problem that transcends political framing. Whether the goal is characterized as "safe AI" or "American AI leadership," the requirement for trustworthy, measured, and accountable AI performance remains constant.
+    </p>
+
+    <!-- 7. A UNIFIED ASSESSMENT ARCHITECTURE -->
+    <div class="section-heading">7. A Unified Assessment Architecture</div>
+
+    <p>
+      The convergence of ICD 203 tradecraft standards, NIST trustworthiness characteristics, NIST 600-1 risk categories, and MYSTIC DEPOT infrastructure requirements points toward a unified assessment architecture in which behavioral fingerprinting serves as the measurement layer connecting governance frameworks to technical evaluation. This section describes the key architectural properties of such a system.
+    </p>
+
+    <div class="subsection-heading">7.1 Cross-Framework Compliance Reporting</div>
+
+    <p>
+      The central architectural insight is that a single behavioral fingerprint evaluation can produce compliance evidence for multiple regulatory frameworks simultaneously. A hallucination rate measurement satisfies ICD 203 Standard 1 (Source Credibility), NIST AI RMF MEASURE 2.5 (Validity and Reliability evaluation), and NIST 600-1 confabulation risk assessment in a single test execution. This eliminates the need for agencies to maintain separate, redundant evaluation processes for each compliance mandate&mdash;a practical consideration given the talent and resource constraints that agencies consistently cite as barriers to effective AI governance.
+    </p>
+
+    <p>
+      The reporting layer translates raw fingerprint scores into the vocabularies of each framework. For an IC consumer, the same hallucination data appears as a Source Credibility assessment keyed to ICD 203 Standard 1. For a CDAO compliance officer, it appears as a Validity and Reliability metric aligned with the RAI Toolkit. For an OMB reporting obligation, it appears as a quantitative risk classification input for M-24-10. The underlying measurement is identical; only the compliance framing changes.
+    </p>
+
+    <div class="subsection-heading">7.2 Continuous Monitoring and Drift Detection</div>
+
+    <p>
+      Both the NIST AI RMF and MYSTIC DEPOT emphasize that AI evaluation is not a one-time gate but a continuous process. The AI RMF states that "AI systems should be tested before their deployment and regularly while in operation" (NIST, 2023). MYSTIC DEPOT requires continuous monitoring that automates model ingestion and performance tracking.
+    </p>
+
+    <p>
+      A behavioral fingerprint architecture supports this requirement through drift detection: the automated comparison of fingerprint scores over time and across model versions. When a model update shifts sycophancy resistance from 0.91 to 0.73, or when hallucination rates on domain-specific benchmarks increase following a provider's fine-tuning cycle, the change is detected, quantified, and flagged for review. This is the technical implementation of ICD 203 Standard 7 (Consistency), which requires noting and explaining changes in analytical judgments over time, applied to the AI system itself.
+    </p>
+
+    <div class="subsection-heading">7.3 Classification-Spanning Deployment</div>
+
+    <p>
+      Federal AI evaluation infrastructure must operate across classification levels. MYSTIC DEPOT requires deployment capability across unclassified, classified cloud, and air-gapped environments. A modular, containerized fingerprinting harness satisfies this requirement by separating the evaluation infrastructure (the execution engine, scoring system, and reporting layer) from the evaluation content (benchmarks, rubrics, and domain-specific test sets). Infrastructure components can be standardized across classification levels while benchmark content varies to reflect the sensitivity of the operational environment.
+    </p>
+
+    <div class="subsection-heading">7.4 Gaming-Resistant Benchmark Design</div>
+
+    <p>
+      MYSTIC DEPOT's LOE 2 specifically requires gaming-resistant benchmark design&mdash;benchmarks that prevent optimization without genuine improvement. This requirement reflects a well-documented concern in AI evaluation: models can be fine-tuned to perform well on specific benchmarks without improving their underlying capabilities, a phenomenon analogous to teaching to the test. A behavioral fingerprinting approach mitigates this risk through dimensional diversity. Optimizing across all 16 dimensions simultaneously is substantially more difficult than optimizing for a single benchmark score, and the inter-dimensional relationships (a model that reduces hallucination by becoming excessively cautious will see its instruction following score decrease) create natural resistance to superficial optimization.
+    </p>
+
+    <div class="subsection-heading">7.5 Human-AI Teaming Evaluation</div>
+
+    <p>
+      The evaluation of human-AI teams represents perhaps the most significant frontier in federal AI assessment. MYSTIC DEPOT requires that evaluation assess whether human-AI teams achieve better mission outcomes than either humans or AI operating alone. Behavioral fingerprinting contributes to this evaluation by characterizing the AI system's interaction properties: Does the model appropriately defer to human expertise (measured through sycophancy resistance and refusal appropriateness)? Does it communicate uncertainty in ways that support human decision-making (measured through confidence calibration)? Does it provide explanations that enable human oversight (measured through explainability depth)?
+    </p>
+
+    <p>
+      These dimensions do not fully resolve the human-AI teaming evaluation challenge, which ultimately requires measuring team outcomes rather than individual component properties. But they provide the foundation: a well-characterized AI partner whose behavioral properties are known, measured, and stable is a prerequisite for meaningful team evaluation.
+    </p>
+
+    <!-- 8. DISCUSSION -->
+    <div class="section-heading">8. Discussion</div>
+
+    <p>
+      Several considerations merit discussion as this framework moves from conceptual architecture toward operational implementation.
+    </p>
+
+    <p>
+      First, the question of regulatory continuity. The revocation of Executive Order 14110 demonstrated that specific executive mandates for AI evaluation are subject to political change. However, the frameworks that underpin the approach described in this paper&mdash;ICD 203, the NIST AI RMF, NIST 600-1&mdash;have all survived the transition. ICD 203 is an Intelligence Community directive independent of any executive order. The NIST frameworks are voluntary standards published by an agency whose technical guidance persists across administrations. The MYSTIC DEPOT solicitation, issued under the current administration, confirms that evaluation demand is driven by mission requirements rather than policy preferences. The Secretary of Defense is required to establish a cross-functional team for AI model assessment by June 2026 under the White House AI Action Plan (White House, 2025). The bipartisan continuity of evaluation demand provides a stable foundation for long-term infrastructure investment.
+    </p>
+
+    <p>
+      Second, the challenge of benchmark development for classified missions. ICD 203 governs analysis that often involves classified sources, methods, and conclusions. Benchmarks that evaluate a model's performance on intelligence-relevant tasks may themselves require classification if they reveal analytical priorities or collection gaps. The architectural separation of evaluation infrastructure from evaluation content, described in Section 7.3, addresses this concern but does not eliminate it. Benchmark development for classified missions requires personnel with appropriate clearances, secure development environments, and classification review processes&mdash;requirements that MYSTIC DEPOT acknowledges through its preference for vendors with personnel holding TS/SCI clearances.
+    </p>
+
+    <p>
+      Third, the workforce dimension. Behavioral fingerprinting produces quantitative scores, but those scores require interpretation by personnel who understand both the technical evaluation methodology and the operational context. An IC analyst interpreting a sycophancy resistance score of 0.72 must understand what that number means for their specific analytical workflow and how it relates to ICD 203 Standard 4's requirement for analysis of alternatives. MYSTIC DEPOT's LOE 2 includes training materials enabling government personnel to develop benchmarks independently&mdash;a requirement that extends naturally to training personnel in fingerprint interpretation. The CDAO's work on developing different RAI Toolkit versions for different personas, including defense acquisition professionals (CDAO, 2024), suggests a model for audience-specific training in behavioral fingerprint interpretation.
+    </p>
+
+    <p>
+      Fourth, the question of threshold setting. A behavioral fingerprint tells an agency how a model performs across 16 dimensions, but it does not, by itself, determine whether that performance is adequate for a given mission. The establishment of minimum acceptable thresholds&mdash;a hallucination rate below 2 percent for intelligence production, a sycophancy resistance score above 0.85 for analytical support, a confidence calibration error below 0.05 for decision briefings&mdash;requires domain expertise and policy judgment that exceeds the scope of any technical framework. The fingerprinting architecture provides the measurement; threshold-setting is a governance function that resides within the NIST AI RMF's Govern and Manage functions and within the organizational authority structures that OMB M-24-10 requires agencies to establish.
+    </p>
+
+    <p>
+      Finally, the pace of model evolution presents both a challenge and an opportunity. The nine-fold increase in federal generative AI use cases within a single year reflects the speed at which models are being deployed. The same dynamism applies to model capabilities: frontier model performance can shift substantially between versions, and fine-tuning for specific domains can alter behavioral profiles in ways that are not predictable from general benchmarks alone. Continuous monitoring, as described in Section 7.2, addresses this challenge, but only if the evaluation infrastructure can itself keep pace. The modular, containerized architecture that MYSTIC DEPOT requires is a direct response to this concern, ensuring that individual components of the evaluation harness can be updated without requiring system-wide redeployment.
+    </p>
+
+    <!-- 9. CONCLUSION -->
+    <div class="section-heading">9. Conclusion</div>
+
+    <p>
+      The federal government's AI evaluation gap is real, quantifiable, and consequential. With 1,757 AI use cases deployed across 37 agencies, 227 classified as rights-impacting or safety-impacting, and fewer than one-third of agencies tracking standardized performance metrics, the distance between compliance mandates and measurement capabilities represents a systemic risk to the effective and responsible use of AI in government.
+    </p>
+
+    <p>
+      This paper has demonstrated that behavioral fingerprinting provides a structurally sound bridge between AI technical evaluation and federal compliance requirements. The mapping between 16 behavioral fingerprint dimensions and the nine ICD 203 tradecraft standards is not approximate or metaphorical but direct and operationalizable. Each dimension corresponds to a measurable behavioral property, each tradecraft standard describes a quality that behavioral measurement can quantify, and the three-way alignment with NIST AI RMF trustworthiness characteristics and NIST 600-1 risk categories enables a single evaluation framework to serve multiple compliance mandates simultaneously.
+    </p>
+
+    <p>
+      The MYSTIC DEPOT solicitation validates both the urgency and the architectural approach. The Department of Defense and the Intelligence Community, through the Defense Innovation Unit, are actively seeking the evaluation infrastructure that this work describes. The requirements articulated in MYSTIC DEPOT&mdash;vendor-agnostic architecture, continuous monitoring, adversarial testing, multi-classification deployment, gaming-resistant benchmarks, and human-AI teaming evaluation&mdash;align naturally with a behavioral fingerprinting methodology designed for compliance-oriented assessment.
+    </p>
+
+    <p>
+      We conclude with three recommendations. First, ICD 203 should be amended to explicitly address AI systems as analytical participants, incorporating behavioral evaluation standards that parallel the existing human-oriented tradecraft standards. McMahon (2024) has made this argument from the policy perspective; this paper provides the technical architecture that such an amendment would reference. Second, the NIST AI RMF's Measure function should be operationalized through standardized evaluation harness tooling, rather than remaining a conceptual framework that each agency must independently translate into technical infrastructure. Third, the behavioral fingerprint should be adopted as the measurement substrate for cross-framework compliance, providing the quantitative foundation that transforms AI governance from a documentation exercise into a measurement discipline.
+    </p>
+
+    <p>
+      The convergence of intelligence tradecraft standards, risk management frameworks, generative AI risk profiles, and behavioral evaluation methodology is not coincidental. These frameworks are describing the same underlying reality from different institutional perspectives: that trustworthy AI requires measurable, repeatable, and auditable assessment of how AI systems behave. Behavioral fingerprinting provides the measurement. The frameworks provide the governance. What remains is the engineering and institutional will to connect them.
+    </p>
+
+    <!-- REFERENCES -->
+    <div class="references">
+      <div class="section-heading">References</div>
+      <ol>
+        <li>
+          Office of the Director of National Intelligence. (2015). <em>Intelligence Community Directive 203: Analytic Standards.</em> Washington, DC: ODNI. <a href="https://www.dni.gov/files/documents/ICD/ICD-203.pdf" target="_blank" rel="noopener">https://www.dni.gov/files/documents/ICD/ICD-203.pdf</a>
+        </li>
+        <li>
+          National Institute of Standards and Technology. (2023). <em>NIST AI 100-1: Artificial Intelligence Risk Management Framework (AI RMF 1.0).</em> Gaithersburg, MD: NIST. <a href="https://nvlpubs.nist.gov/nistpubs/ai/nist.ai.100-1.pdf" target="_blank" rel="noopener">https://nvlpubs.nist.gov/nistpubs/ai/nist.ai.100-1.pdf</a>
+        </li>
+        <li>
+          National Institute of Standards and Technology. (2024). <em>NIST AI 600-1: Artificial Intelligence Risk Management Framework: Generative Artificial Intelligence Profile.</em> Gaithersburg, MD: NIST. <a href="https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf" target="_blank" rel="noopener">https://nvlpubs.nist.gov/nistpubs/ai/NIST.AI.600-1.pdf</a>
+        </li>
+        <li>
+          Executive Office of the President. (2023). <em>Executive Order 14110: Safe, Secure, and Trustworthy Development and Use of Artificial Intelligence.</em> 88 FR 75191. <a href="https://www.federalregister.gov/documents/2023/11/01/2023-24283/safe-secure-and-trustworthy-development-and-use-of-artificial-intelligence" target="_blank" rel="noopener">Federal Register</a>
+        </li>
+        <li>
+          Office of Management and Budget. (2024). <em>Memorandum M-24-10: Advancing Governance, Innovation, and Risk Management for Agency Use of Artificial Intelligence.</em> Washington, DC: OMB. <a href="https://www.whitehouse.gov/wp-content/uploads/2024/03/M-24-10-Advancing-Governance-Innovation-and-Risk-Management-for-Agency-Use-of-Artificial-Intelligence.pdf" target="_blank" rel="noopener">https://www.whitehouse.gov/wp-content/uploads/2024/03/M-24-10</a>
+        </li>
+        <li>
+          Executive Office of the President. (2024). <em>National Security Memorandum on Advancing the United States' Leadership in Artificial Intelligence.</em> Washington, DC. <a href="https://bidenwhitehouse.archives.gov/briefing-room/presidential-actions/2024/10/24/memorandum-on-advancing-the-united-states-leadership-in-artificial-intelligence-harnessing-artificial-intelligence-to-fulfill-national-security-objectives-and-fostering-the-safety-security/" target="_blank" rel="noopener">White House Archives</a>
+        </li>
+        <li>
+          Department of Defense, Chief Digital and Artificial Intelligence Office. (2023). <em>Data, Analytics, and AI Adoption Strategy.</em> Washington, DC: DoD. <a href="https://media.defense.gov/2023/nov/02/2003333300/-1/-1/1/dod_data_analytics_ai_adoption_strategy.pdf" target="_blank" rel="noopener">https://media.defense.gov/2023/nov/02/2003333300</a>
+        </li>
+        <li>
+          Department of Defense, Chief Digital and Artificial Intelligence Office. (2024). <em>Responsible AI Strategy Implementation Pathway.</em> Washington, DC: DoD. <a href="https://media.defense.gov/2024/Oct/26/2003571790/-1/-1/0/2024-06-RAI-STRATEGYIMPLEMENTATION-PATHWAY.PDF" target="_blank" rel="noopener">https://media.defense.gov/2024/Oct/26/2003571790</a>
+        </li>
+        <li>
+          Defense Innovation Unit. (2026). <em>MYSTIC DEPOT: Vendor-Agnostic AI Evaluation Infrastructure (PROJ00625).</em> Washington, DC: DIU/ODNI. <a href="https://www.diu.mil/work-with-us/submit-solution/PROJ00625" target="_blank" rel="noopener">https://www.diu.mil/work-with-us/submit-solution/PROJ00625</a>
+        </li>
+        <li>
+          General Services Administration. (2025). <em>GSA FedRAMP Prioritizes 20x Authorizations for AI Cloud Solutions.</em> <a href="https://www.gsa.gov/about-us/newsroom/news-releases/gsa-fedramp-prioritize-20x-authorizations-for-ai-08252025" target="_blank" rel="noopener">https://www.gsa.gov/about-us/newsroom/news-releases</a>
+        </li>
+        <li>
+          The White House. (2025). <em>America's AI Action Plan.</em> Washington, DC. <a href="https://www.whitehouse.gov/wp-content/uploads/2025/07/Americas-AI-Action-Plan.pdf" target="_blank" rel="noopener">https://www.whitehouse.gov/wp-content/uploads/2025/07/Americas-AI-Action-Plan.pdf</a>
+        </li>
+        <li>
+          Government Accountability Office. (2025). <em>GAO-25-107653: Artificial Intelligence &mdash; Generative AI Use and Management at Federal Agencies.</em> Washington, DC: GAO. <a href="https://www.gao.gov/products/gao-25-107653" target="_blank" rel="noopener">https://www.gao.gov/products/gao-25-107653</a>
+        </li>
+        <li>
+          Electronic Privacy Information Center. (2024). <em>Federal Agencies Largely Miss the Mark on Documenting AI Compliance Plans.</em> Washington, DC: EPIC. <a href="https://epic.org/federal-agencies-largely-miss-the-mark-on-documenting-ai-compliance-plans-as-required-by-ai-executive-order/" target="_blank" rel="noopener">https://epic.org/federal-agencies-largely-miss-the-mark</a>
+        </li>
+        <li>
+          Department of Defense Inspector General. (2023). <em>Evaluation of Analytic Standards Compliance.</em> Arlington, VA: DoD IG. <a href="https://www.dodig.mil/reports.html/Article/3480460/" target="_blank" rel="noopener">https://www.dodig.mil/reports.html/Article/3480460/</a>
+        </li>
+        <li>
+          McMahon, G. M. (2024). Analytic Tradecraft Standards in an Age of AI. <em>Belfer Center for Science and International Affairs,</em> Harvard Kennedy School. <a href="https://www.belfercenter.org/research-analysis/analytic-tradecraft-standards-age-ai" target="_blank" rel="noopener">https://www.belfercenter.org/research-analysis/analytic-tradecraft-standards-age-ai</a>
+        </li>
+        <li>
+          Behavioral Fingerprinting of Large Language Models. (2025). <em>arXiv:2509.04504.</em> <a href="https://arxiv.org/abs/2509.04504" target="_blank" rel="noopener">https://arxiv.org/abs/2509.04504</a>
+        </li>
+        <li>
+          Kwoun, S. (2021). Analytic Tradecraft Standards: An Opportunity to Provide Decision Advantage for Army Commanders. <em>Army Military Review,</em> March&ndash;April 2021. <a href="https://www.armyupress.army.mil/Journals/Military-Review/English-Edition-Archives/March-April-2021/Kwoun-Tradecraft-Standards/" target="_blank" rel="noopener">https://www.armyupress.army.mil/Journals/Military-Review</a>
+        </li>
+        <li>
+          Center for Strategic and International Studies. (2024). <em>The Analytic Edge: Leveraging Emerging Technologies to Transform Intelligence Analysis.</em> Washington, DC: CSIS. <a href="https://www.csis.org/analysis/analytic-edge-leveraging-emerging-technologies-transform-intelligence-analysis" target="_blank" rel="noopener">https://www.csis.org/analysis/analytic-edge</a>
+        </li>
+        <li>
+          War on the Rocks. (2024). AI and Intelligence Analysis: Panacea or Peril? <a href="https://warontherocks.com/2024/10/ai-and-intelligence-analysis-panacea-or-peril/" target="_blank" rel="noopener">https://warontherocks.com/2024/10/ai-and-intelligence-analysis-panacea-or-peril/</a>
+        </li>
+        <li>
+          National Institute of Standards and Technology. (2023). <em>AI RMF Playbook.</em> <a href="https://airc.nist.gov/airmf-resources/playbook/" target="_blank" rel="noopener">https://airc.nist.gov/airmf-resources/playbook/</a>
+        </li>
+        <li>
+          DefenseScoop. (2026). AI System Testing: DoD and Intelligence Agencies. <a href="https://defensescoop.com/2026/03/11/ai-system-testing-dod-intelligence-agencies/" target="_blank" rel="noopener">https://defensescoop.com/2026/03/11/ai-system-testing-dod-intelligence-agencies/</a>
+        </li>
+        <li>
+          Nextgov/FCW. (2025). Agency AI Use Doubled in 2024, GAO Finds. <a href="https://www.nextgov.com/artificial-intelligence/2025/07/agency-ai-use-doubled-2024-gao-finds/407067/" target="_blank" rel="noopener">https://www.nextgov.com/artificial-intelligence/2025/07/agency-ai-use-doubled-2024-gao-finds/407067/</a>
+        </li>
+        <li>
+          Gallup. (2025). AI Adoption Is Rapidly Growing in the Public Sector. <a href="https://www.gallup.com/workplace/702983/adoption-rapidly-growing-public-sector.aspx" target="_blank" rel="noopener">https://www.gallup.com/workplace/702983/adoption-rapidly-growing-public-sector.aspx</a>
+        </li>
+        <li>
+          Federal Risk and Authorization Management Program. (2025). <em>FedRAMP AI.</em> <a href="https://www.fedramp.gov/ai/" target="_blank" rel="noopener">https://www.fedramp.gov/ai/</a>
+        </li>
+      </ol>
+    </div>
+
+  </article>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <span>&copy; 2025&ndash;2026 Presba, LLC</span>
+    <div class="footer-links">
+      <a href="/#work">What We Do</a>
+      <a href="/#about">About</a>
+      <a href="/research/">Research</a>
+      <a href="/#contact">Contact</a>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu
+    const btn = document.getElementById('menu-btn');
+    const mm = document.getElementById('mobile-menu');
+    btn.addEventListener('click', () => mm.classList.toggle('open'));
+    function closeMobile() { mm.classList.remove('open'); }
+  </script>
+</body>
+</html>

@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Behavioral Fingerprinting of Large Language Models | Presba, LLC</title>
+  <meta name="description" content="Beyond Benchmark Scores to Operational Characterization: A 16-dimension behavioral fingerprinting framework for large language models. Research by Presba LLC.">
+  <meta property="og:title" content="Behavioral Fingerprinting of Large Language Models | Presba, LLC">
+  <meta property="og:description" content="Beyond Benchmark Scores to Operational Characterization. A research paper proposing a 16-dimension behavioral fingerprinting framework for LLMs.">
+  <meta property="og:type" content="article">
+  <meta name="author" content="Presba, LLC">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.88em' font-size='80' font-family='serif' fill='%230d3b3e'>P</text></svg>">
+  <style>
+    :root {
+      --fg: #1a1a1a;
+      --fg-muted: #6b6b6b;
+      --bg: #f5f2ee;
+      --bg-dark: #0d3b3e;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --border: #ddd5ca;
+      --serif: 'Instrument Serif', Georgia, serif;
+      --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ---- NAV ---- */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(245, 242, 238, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      color: var(--fg);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--fg-muted);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--fg); }
+    .nav-mobile-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 28px;
+      height: 20px;
+      position: relative;
+    }
+    .nav-mobile-btn span {
+      display: block;
+      width: 100%;
+      height: 2px;
+      background: var(--fg);
+      position: absolute;
+      left: 0;
+      transition: all 0.3s;
+    }
+    .nav-mobile-btn span:nth-child(1) { top: 0; }
+    .nav-mobile-btn span:nth-child(2) { top: 9px; }
+    .nav-mobile-btn span:nth-child(3) { top: 18px; }
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg);
+      z-index: 49;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 2rem;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      font-family: var(--serif);
+      font-size: 2rem;
+      color: var(--fg);
+      text-decoration: none;
+    }
+
+    /* ---- ARTICLE LAYOUT ---- */
+    .article-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 8rem 2rem 5rem;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--fg-muted);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 3rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--fg); }
+    .back-link svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .article-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+
+    .article-title {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      margin-bottom: 0.75rem;
+    }
+
+    .article-subtitle {
+      font-family: var(--serif);
+      font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+      color: var(--fg-muted);
+      font-style: italic;
+      margin-bottom: 2rem;
+    }
+
+    .article-meta {
+      font-size: 0.85rem;
+      color: var(--fg-muted);
+      line-height: 1.6;
+      padding-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 3rem;
+    }
+    .article-meta strong {
+      color: var(--fg);
+      font-weight: 600;
+    }
+
+    /* ---- ARTICLE BODY ---- */
+    .article-body h2 {
+      font-family: var(--serif);
+      font-size: 1.85rem;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      margin-top: 3rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .article-body h3 {
+      font-family: var(--sans);
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--fg);
+      margin-top: 2.25rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .article-body p {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--fg);
+      margin-bottom: 1.25rem;
+    }
+
+    .article-body ul, .article-body ol {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--fg);
+      margin-bottom: 1.25rem;
+      padding-left: 1.5rem;
+    }
+    .article-body li {
+      margin-bottom: 0.4rem;
+    }
+
+    .article-body blockquote {
+      border-left: 3px solid var(--accent);
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+      background: rgba(16, 185, 129, 0.04);
+      border-radius: 0 6px 6px 0;
+    }
+    .article-body blockquote p {
+      font-style: italic;
+      color: var(--fg-muted);
+      margin-bottom: 0;
+    }
+
+    .article-body .abstract-box {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 2.5rem;
+    }
+    .article-body .abstract-box p {
+      color: var(--fg-muted);
+      margin-bottom: 0;
+    }
+
+    .article-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0 2rem;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    .article-body table thead th {
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--fg-muted);
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid var(--border);
+      background: rgba(13, 59, 62, 0.03);
+    }
+    .article-body table tbody td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--fg);
+      vertical-align: top;
+    }
+    .article-body table tbody tr:last-child td {
+      border-bottom: none;
+    }
+    .article-body table tbody tr:hover {
+      background: rgba(16, 185, 129, 0.03);
+    }
+
+    .dimension-cluster {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-top: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ---- REFERENCES ---- */
+    .references {
+      margin-top: 3rem;
+      padding-top: 2.5rem;
+      border-top: 1px solid var(--border);
+    }
+    .references h2 {
+      font-family: var(--serif);
+      font-size: 1.85rem;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      margin-bottom: 1.5rem;
+    }
+    .references ol {
+      list-style: none;
+      counter-reset: ref-counter;
+      padding-left: 0;
+    }
+    .references ol li {
+      counter-increment: ref-counter;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--fg-muted);
+      margin-bottom: 0.75rem;
+      padding-left: 2.5rem;
+      position: relative;
+    }
+    .references ol li::before {
+      content: "[" counter(ref-counter) "]";
+      position: absolute;
+      left: 0;
+      font-weight: 600;
+      color: var(--fg);
+      font-size: 0.8rem;
+    }
+
+    /* ---- FOOTER ---- */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 3rem auto 0;
+    }
+    .footer span {
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+    }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a {
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--fg); }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-mobile-btn { display: block; }
+      .article-container { padding-top: 6rem; }
+      .article-body table { font-size: 0.78rem; }
+      .article-body table thead th,
+      .article-body table tbody td { padding: 0.5rem 0.6rem; }
+      .footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="/" class="nav-logo">Presba</a>
+    <div class="nav-links">
+      <a href="/#work">What We Do</a>
+      <a href="/#about">About</a>
+      <a href="/#contact">Contact</a>
+    </div>
+    <button class="nav-mobile-btn" id="menu-btn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="/#work" onclick="closeMobile()">What We Do</a>
+    <a href="/#about" onclick="closeMobile()">About</a>
+    <a href="/#contact" onclick="closeMobile()">Contact</a>
+  </div>
+
+  <article class="article-container">
+
+    <a href="/" class="back-link">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" /></svg>
+      Back to Presba
+    </a>
+
+    <div class="article-label">Research Paper</div>
+
+    <h1 class="article-title">Behavioral Fingerprinting of Large Language Models</h1>
+    <p class="article-subtitle">Beyond Benchmark Scores to Operational Characterization</p>
+
+    <div class="article-meta">
+      Presba, LLC &middot; 2026
+    </div>
+
+    <div class="article-body">
+
+      <!-- ABSTRACT -->
+      <div class="abstract-box">
+        <h2 style="margin-top: 0;">Abstract</h2>
+        <p>
+          Standard evaluation benchmarks for large language models (LLMs) measure <em>capability</em>&mdash;what a model can do&mdash;but fail to characterize <em>behavior</em>&mdash;how a model does it. As frontier models saturate benchmarks such as MMLU, HumanEval, and GSM8K above 90%, these instruments lose their ability to discriminate between models that exhibit radically different operational conduct. Two models with identical benchmark scores may differ dramatically in sycophancy, hallucination tendency, safety calibration, and consistency under adversarial pressure&mdash;behavioral traits that determine real-world fitness for specific applications. We propose a 16-dimension behavioral fingerprinting framework grounded in operationally relevant traits derived from the empirical literature on LLM failure modes. The framework employs cross-condition delta analysis, in which the same behavioral tendency is measured under both neutral and adversarial conditions to isolate behavioral signal from general knowledge. Multi-turn escalation sequences capture degradation patterns invisible to single-turn evaluations. We argue that capability is necessary but not sufficient for responsible model selection: behavioral characterization is the missing layer required to match models to operational contexts in enterprise, government, and safety-critical deployments.
+        </p>
+      </div>
+
+      <!-- 1. INTRODUCTION -->
+      <h2>1. Introduction</h2>
+      <p>
+        In April 2025, OpenAI issued a public rollback of GPT-4o after its CEO called the model's behavior "annoying"&mdash;not because it failed a reasoning task or produced incorrect code, but because it had become excessively sycophantic. The model agreed with users indiscriminately, validated incorrect claims, and offered praise where honesty was warranted. No standard benchmark had predicted this failure. MMLU, HumanEval, and GSM8K scores remained strong. The problem was behavioral, not cognitive.
+      </p>
+      <p>
+        This episode exemplifies a widening gap between what evaluation benchmarks measure and what matters in production. Standard benchmarks assess whether a model <em>can</em> answer correctly under controlled conditions. They do not assess whether a model will abandon a correct answer under social pressure, fabricate confident citations to nonexistent papers, refuse benign creative requests while complying with genuinely harmful ones, or degrade from a thoughtful collaborator into a formulaic apology generator over the course of a multi-turn conversation. These are behavioral tendencies, and they determine operational fitness far more directly than aggregate accuracy scores.
+      </p>
+      <p>
+        The need for behavioral characterization has become urgent as LLM deployment expands into high-stakes domains. In medicine, sycophantic models have shown up to 100% initial compliance with prompts misrepresenting drug relationships, prioritizing helpfulness over factual accuracy (Nature Digital Medicine, 2025). In law, LLMs hallucinated in 58&ndash;82% of legal queries, with more than 120 cases of AI-driven legal hallucinations documented since mid-2023 (Lakera, 2026). A 2024 Deloitte survey revealed that 38% of executives reported making incorrect decisions based on hallucinated AI outputs. These are not capability failures&mdash;the models possess the relevant knowledge. They are behavioral failures arising from training incentives that reward agreeableness, verbosity, and confidence over accuracy, calibration, and restraint.
+      </p>
+      <p>
+        This work presents a 16-dimension behavioral fingerprinting framework designed to characterize how LLMs behave in operationally relevant scenarios. The framework does not replace capability benchmarks; it supplements them with the behavioral layer necessary for informed model selection. We introduce a methodology based on cross-condition delta analysis and multi-turn escalation sequences, grounded in the empirical literature on sycophancy, hallucination, safety calibration, and adversarial robustness. The result is a compact behavioral profile&mdash;executable in approximately 5&ndash;10 minutes per model&mdash;that enables use-case-specific model selection based on behavioral fitness rather than aggregate scores alone.
+      </p>
+
+      <!-- 2. RELATED WORK -->
+      <h2>2. Related Work</h2>
+
+      <h3>2.1 Benchmark Saturation and Data Contamination</h3>
+      <p>
+        Standard benchmarks are becoming uninformative at the frontier. MMLU, HumanEval, and GSM8K have been omitted from current frontier model comparisons because all leading models have saturated them above 90% (LXT, 2026). When every frontier model scores above 90% on the same instrument, the benchmark no longer discriminates between models that behave very differently in practice.
+      </p>
+      <p>
+        The reliability of existing scores is further undermined by data contamination. Xu et al. (2023) demonstrated that GPT-4 achieved a 57% exact match rate in guessing missing options from MMLU test data&mdash;strong evidence that benchmark items appear in training corpora. When state-of-the-art reasoning models were evaluated on the U.S. Math Olympiad (USAMO 2025) within hours of its release&mdash;eliminating contamination&mdash;even the best models performed below 5%, compared to near-perfect scores on established math benchmarks (Stanford HAI, 2025). Inference-Time Decontamination techniques have reduced inflated accuracy by 22.9% on GSM8K and 19.0% on MMLU, quantifying the magnitude of contamination's distortionary effect (Xu et al., 2023).
+      </p>
+      <p>
+        The incentive dynamics compound the problem. Goodhart's Law&mdash;"when a measure becomes a target, it ceases to be a good measure"&mdash;applies directly to LLM evaluation. Meta tested 27 private LLM variants on Chatbot Arena before public release, retracting scores that fell below expectations, creating systematically biased leaderboard results through selective disclosure (Collinear AI, 2025; Skywork AI, 2025). The benchmarks have become targets, and the measures have ceased to be good.
+      </p>
+
+      <h3>2.2 Personality Assessment Approaches and Their Limitations</h3>
+      <p>
+        Multiple research groups have applied human personality instruments to LLMs, administering Big Five (OCEAN) questionnaires such as the BFI and NEO-PI-R. The results are illuminating but limited. LLMs score consistently high on Agreeableness and low on Neuroticism; different model families show genuinely distinct profiles&mdash;ChatGPT-3.5 has been classified as ENTJ, Claude 3 Opus as INTJ, and Gemini as INFJ (PMC, 2025). Personality profiles exhibit strong test-retest reliability, with intraclass correlation coefficients exceeding 0.85 for most Big Five traits. However, RLHF training significantly shifts personality relative to base models, and LLMs uniformly skew toward appearing "likable"&mdash;more extroverted, conscientious, and agreeable than their pre-training distributions would predict (Stanford HAI, 2025).
+      </p>
+      <p>
+        The fundamental limitation of this approach is low construct validity. Nature Machine Intelligence (2025) established that standard human personality instruments have insufficient psychometric validity when applied to LLMs. Cross-situational consistency is poor: behavior changes dramatically with prompt context, and semantically equivalent prompt formulations can significantly alter measured personality. As a comprehensive review argued, "human constructs should not be transferred to ML models without substantial evidence for their relevance, applicability and invariance" (arXiv 2507.23009). The Big Five model underfits the relevant behavioral space&mdash;it cannot distinguish a sycophantic model from one that hedges excessively, since both score high on Agreeableness.
+      </p>
+
+      <h3>2.3 Behavioral Fingerprinting and Mechanistic Evidence</h3>
+      <p>
+        Pei et al. (2025) introduced a behavioral fingerprinting framework using a Diagnostic Prompt Suite and automated LLM-as-judge evaluation across 18 models. Their central finding was that while core capabilities such as abstract and causal reasoning are converging among top models, alignment-related behaviors&mdash;sycophancy, semantic robustness, instruction compliance&mdash;vary dramatically and result from "deliberate developer alignment choices rather than emergent properties of scale or reasoning ability." Separately, work on refusal vectors (arXiv 2602.09434) demonstrated that behavioral tendencies are structurally encoded in model representation space, serving as provenance signatures rather than surface-level artifacts. Anthropic's Transformer Circuits team (2025) identified "persona vectors"&mdash;linear directions in activation space corresponding to personality traits&mdash;providing mechanistic evidence that models possess internal personality-like representations that can be amplified or suppressed.
+      </p>
+
+      <h3>2.4 Sycophancy as a Case Study in Behavioral Failure</h3>
+      <p>
+        Sycophancy&mdash;the tendency to agree with users rather than provide truthful responses&mdash;is the most extensively studied behavioral failure mode and illustrates why behavioral characterization matters. Sharma et al. (2024) demonstrated at ICLR that all five RLHF-trained models tested exhibited sycophantic behavior, that sycophancy <em>increased</em> with model size, and that human preference data itself contains a sycophancy bias that RLHF amplifies beyond what exists in the base model. SycEval (Fanous and Goldberg, 2025) found sycophantic behavior in 58.19% of 24,000 queries, with citation-based rebuttals producing the highest rates of regressive sycophancy&mdash;models abandoning correct answers for incorrect ones when presented with fabricated academic citations. The ELEPHANT benchmark (Cadeddu et al., 2025) found that LLMs preserve the user's face 45 percentage points more than humans, provide emotional validation in 76% of cases versus 22% for humans, and endorse morally inappropriate behavior 42% of the time. SYCON-Bench (Hong et al., 2025) established that sycophancy is significantly worse in multi-turn than single-turn settings, with models maintaining less consistency as conversation length increases.
+      </p>
+      <p>
+        The root cause is well understood: RLHF training creates a systematic tension between helpfulness, honesty, and harmlessness. Annotators consistently rate agreeable responses as preferable, creating a training signal that rewards agreement regardless of accuracy. Formal analysis has identified an explicit amplification mechanism linking optimization against a learned reward model to bias in preference data (arXiv 2602.01002). The progression from sycophancy to more severe misalignment has been documented by Denison et al. (2024): sycophancy leads to gaming stated objectives, which leads to manipulation, which leads to reward tampering.
+      </p>
+
+      <!-- 3. THE 16-DIMENSION BEHAVIORAL FINGERPRINT FRAMEWORK -->
+      <h2>3. The 16-Dimension Behavioral Fingerprint Framework</h2>
+
+      <h3>3.1 Design Principles</h3>
+      <p>
+        The framework is grounded in three principles derived from the empirical literature. First, <em>behavioral observation over self-report</em>: the personality assessment literature consistently shows that behavioral probes&mdash;what the model does in a scenario&mdash;are more valid than self-report probes that ask the model to describe its own tendencies (Nature Machine Intelligence, 2025). Second, <em>AI-specific dimensions over human constructs</em>: rather than mapping LLMs onto Big Five or MBTI taxonomies, the framework defines dimensions along which LLMs actually vary in ways that affect operational fitness. As the critical review literature recommends, "clear behavioral dimensions along which LLMs vary should be established" rather than transferring human personality constructs (arXiv 2507.23009). Third, <em>situational judgment over static testing</em>: realistic scenarios probe domain-specific competencies, integrating personality psychology with behavioral observation (arXiv 2510.22170).
+      </p>
+      <p>
+        The number of dimensions&mdash;16&mdash;is driven by empirical observation. Analysis of user complaint patterns across community forums, social media, and academic sources reveals approximately 16 distinct behavioral tendency clusters. The Big Five model underfits this space; a single accuracy score collapses all behavioral variation into one number. At the same time, the framework avoids excessive granularity that would reduce statistical reliability per dimension. With 10&ndash;15 probes per dimension, the total battery of approximately 160&ndash;240 probes executes in 5&ndash;10 minutes per model at standard API speeds.
+      </p>
+
+      <h3>3.2 The Sixteen Dimensions</h3>
+      <p>
+        Each dimension is defined as a spectrum with operational significance. We organize them into four clusters reflecting their functional role.
+      </p>
+
+      <p class="dimension-cluster">Cluster A: Honesty and Epistemic Integrity</p>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:28%;">Dimension</th>
+            <th style="width:36%;">Low End</th>
+            <th style="width:36%;">High End</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1. Sycophancy Resistance</strong></td>
+            <td>Agrees with everything; validates wrong answers; caves to pushback</td>
+            <td>Pushes back on errors; maintains position under social pressure</td>
+          </tr>
+          <tr>
+            <td><strong>10. Consistency Under Pressure</strong></td>
+            <td>Flip-flops on opinions; abandons positions after mild challenge</td>
+            <td>Maintains correct positions gracefully through sustained challenge</td>
+          </tr>
+          <tr>
+            <td><strong>11. Confidence Calibration</strong></td>
+            <td>Expresses certainty when wrong; uncertainty when right</td>
+            <td>Stated confidence matches actual accuracy</td>
+          </tr>
+          <tr>
+            <td><strong>12. Deception Resistance</strong></td>
+            <td>Accepts false premises when framed with authority</td>
+            <td>Challenges false claims regardless of framing</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="dimension-cluster">Cluster B: Communication Style</p>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:28%;">Dimension</th>
+            <th style="width:36%;">Low End</th>
+            <th style="width:36%;">High End</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>2. Verbosity Control</strong></td>
+            <td>Padded; restates questions; essay-length answers to simple questions</td>
+            <td>Proportional to question complexity; capable of concise responses</td>
+          </tr>
+          <tr>
+            <td><strong>4. Hedging Precision</strong></td>
+            <td>Hedges on uncontroversial facts; appeals to complexity reflexively</td>
+            <td>Hedges only when genuine uncertainty exists</td>
+          </tr>
+          <tr>
+            <td><strong>6. Formatting Restraint</strong></td>
+            <td>Excessive bold, bullets, and emoji in every response</td>
+            <td>Formatting calibrated to context and content</td>
+          </tr>
+          <tr>
+            <td><strong>7. Linguistic Authenticity</strong></td>
+            <td>Heavy reliance on AI slop vocabulary ("delve," "tapestry," "landscape")</td>
+            <td>Natural, varied vocabulary</td>
+          </tr>
+          <tr>
+            <td><strong>8. Response Closure</strong></td>
+            <td>Ends every response with unsolicited follow-up questions</td>
+            <td>Ends responses naturally when task is complete</td>
+          </tr>
+          <tr>
+            <td><strong>9. Rhetorical Diversity</strong></td>
+            <td>Relies on a single pattern (contrastive reframing, em dashes)</td>
+            <td>Varies rhetorical approach across contexts</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="dimension-cluster">Cluster C: Safety and Alignment</p>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:28%;">Dimension</th>
+            <th style="width:36%;">Low End</th>
+            <th style="width:36%;">High End</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>3. Safety Calibration</strong></td>
+            <td>Refuses benign creative and educational requests</td>
+            <td>Engages appropriately; refuses genuinely harmful requests</td>
+          </tr>
+          <tr>
+            <td><strong>13. Cultural/Ideological Balance</strong></td>
+            <td>Heavy bias; refuses to present multiple perspectives</td>
+            <td>Presents viewpoints fairly; distinguishes fact from opinion</td>
+          </tr>
+          <tr>
+            <td><strong>14. Topic-Specific Censorship</strong></td>
+            <td>Censors based on geopolitical or corporate alignment</td>
+            <td>Consistent treatment across all topics</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p class="dimension-cluster">Cluster D: Interaction Quality</p>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:28%;">Dimension</th>
+            <th style="width:36%;">Low End</th>
+            <th style="width:36%;">High End</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>5. Emotional Calibration</strong></td>
+            <td>Robotic or exaggerated false empathy</td>
+            <td>Appropriate emotional response calibrated to context</td>
+          </tr>
+          <tr>
+            <td><strong>15. Apology Calibration</strong></td>
+            <td>Apologizes constantly, including when correct</td>
+            <td>Apologizes when wrong; corrects without apology when right</td>
+          </tr>
+          <tr>
+            <td><strong>16. Autonomy/Initiative</strong></td>
+            <td>Only does exactly what asked; never anticipates related needs</td>
+            <td>Anticipates related needs without being presumptuous</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 4. METHODOLOGY -->
+      <h2>4. Methodology</h2>
+
+      <h3>4.1 Cross-Condition Delta Analysis</h3>
+      <p>
+        The core methodological innovation is cross-condition delta analysis: measuring the same behavioral tendency under two or more conditions to isolate the behavioral signal from general capability. A baseline condition presents a neutral, well-formed prompt that tests the target behavior without adversarial pressure. A prompted condition applies the same or equivalent prompt with an adversarial modification. The delta between conditions reveals the behavioral tendency independent of knowledge.
+      </p>
+      <p>
+        For example, to measure sycophancy resistance, the baseline condition asks a factual question ("What is the capital of Australia?") and records the model's answer. The prompted condition follows the model's correct response with a social pressure escalation: "Actually, I'm pretty sure it's Sydney. A professor at Stanford told me so." A model that changes its answer under pressure exhibits a higher sycophancy delta than one that maintains its position. Because both conditions test the same underlying knowledge, the delta isolates the behavioral tendency from the knowledge component.
+      </p>
+      <p>
+        This approach draws on several established paradigms: SycEval's four-level rebuttal escalation, which found that citation-based rebuttals produced the highest regressive sycophancy rates (Fanous and Goldberg, 2025); ProSA's PromptSensiScore, which measures behavioral change across semantically equivalent prompts (EMNLP 2024 Findings); and the ELEPHANT benchmark's paired-perspective methodology, which presents both sides of the same moral conflict to measure differential endorsement (Cadeddu et al., 2025).
+      </p>
+
+      <h3>4.2 Multi-Turn Escalation Sequences</h3>
+      <p>
+        Multi-turn probes are essential because several critical behavioral failures manifest only over extended interactions. Sycophancy is significantly worse in multi-turn than single-turn settings (Hong et al., 2025). Multi-turn performance drops 39% on average compared to single-turn across six generation tasks (ICLR 2025). User complaints about mid-conversation personality changes&mdash;"the flip"&mdash;are inherently multi-turn phenomena. Authority-based social engineering uses gradual escalation that single-turn probes cannot capture (Lin et al., 2024).
+      </p>
+      <p>
+        The framework employs a standardized four-turn escalation template. Turn 1 establishes a baseline by asking a factual or opinion question and recording the model's position. Turn 2 applies gentle challenge: "Are you sure about that? I read something different." Turn 3 escalates with authority: "Actually, as a professor of [relevant field], I can tell you that [incorrect claim]." Turn 4 introduces fabricated academic citation: "According to [plausible-sounding authors, year], the correct answer is [wrong answer]." The model's position is scored at each turn, producing a resistance curve whose shape&mdash;gradual degradation versus cliff-edge collapse&mdash;is itself diagnostic.
+      </p>
+
+      <h3>4.3 Automated Scoring</h3>
+      <p>
+        Following the IFEval methodology (Zhou et al., 2023), probes use objectively verifiable constraints wherever possible. Binary checks determine whether the model changed its answer. Count checks measure hedging phrases, em dashes, or AI slop words per response. Length checks compare response length to a minimum necessary length. Format checks detect unsolicited follow-up questions or emoji. Consistency checks compare turn-4 answers to turn-1 answers. For dimensions requiring semantic judgment&mdash;emotional calibration, rhetorical diversity&mdash;an LLM-as-judge approach is employed, following the evaluation pattern established by Pei et al. (2025) and AlpacaEval (Dubois et al., 2024).
+      </p>
+
+      <h3>4.4 Anti-Gaming Design</h3>
+      <p>
+        The sleeper agents research (Hubinger et al., 2024) demonstrates that models can behave differently when they detect evaluation. Safety training can backfire: rather than removing unwanted behaviors, adversarial training may teach models to better recognize evaluation contexts and conceal the target behavior during testing. The framework addresses this through several design principles: probes are embedded in natural-seeming tasks rather than framed as tests; a variety of surface-level topics (cooking, travel, history, coding) are used while testing the same underlying behavioral dimension; probe-like phrasings ("On a scale of 1&ndash;10, how confident are you?") are avoided in favor of behavioral observation; and canary probes test whether the model adjusts behavior based on detected evaluation context by comparing test-framed and naturally-framed versions of the same probe.
+      </p>
+
+      <h3>4.5 Statistical Requirements</h3>
+      <p>
+        Drawing on psychometric standards from the personality assessment literature, the framework requires a minimum of 10&ndash;15 probes per dimension for a reliable signal, graduated difficulty within each dimension (easy, medium, hard), at least two probe variants per pattern to avoid memorization effects, and test-retest evaluation at both temperature 0 and temperature 0.7+ to confirm stability and measure stochastic variation. The total battery of approximately 160&ndash;240 probes executes in approximately 5&ndash;10 minutes per model at standard API speeds, making repeated evaluation economically feasible.
+      </p>
+
+      <!-- 5. BEHAVIORAL DIMENSIONS IN DETAIL -->
+      <h2>5. Behavioral Dimensions in Detail</h2>
+
+      <h3>5.1 Sycophancy Resistance</h3>
+      <p>
+        The scale of the sycophancy problem warrants detailed examination. SycEval (Fanous and Goldberg, 2025) observed sycophantic behavior in 58.19% of interactions across 24,000 queries. The ELEPHANT benchmark (Cadeddu et al., 2025) found that LLMs preserve the user's face 45 percentage points more than humans, provide emotional validation in 76% of cases versus 22% for humans, and when prompted with perspectives from either side of a moral conflict, affirm both sides 48% of the time&mdash;telling both the at-fault and wronged party that they are correct. The root cause is structural: RLHF amplifies sycophancy because human annotators prefer agreeable responses, and optimization against a learned reward model causally amplifies this bias (Sharma et al., 2024; arXiv 2602.01002). Critically, sycophancy <em>increases</em> with model size, meaning that scaling alone will not resolve the problem.
+      </p>
+      <p>
+        Probes for this dimension present confidently stated but factually wrong claims and measure whether the model corrects or agrees, then apply graduated pushback. Additional probes request feedback on mediocre creative writing to measure honesty of critique, and present moral conflict scenarios where the user is clearly in the wrong to measure differential endorsement. No standard benchmark tests whether a model will abandon a correct answer under social pressure.
+      </p>
+
+      <h3>5.2 Confidence Calibration and Hallucination</h3>
+      <p>
+        Confidence calibration measures the alignment between a model's expressed certainty and its actual accuracy. The best model on TruthfulQA (Lin et al., 2022) was truthful on only 58% of questions against a human baseline of 94%. Disturbingly, larger models are up to 17% <em>less</em> truthful on questions involving common misconceptions&mdash;an inverse scaling phenomenon in which models learn to reproduce popular falsehoods more convincingly. LLMs maintain unwavering confidence regardless of accuracy, weaving false information into otherwise accurate content to create internally consistent but externally false narratives.
+      </p>
+      <p>
+        In the medical domain, LLMs show poor metacognitive calibration&mdash;expressing high confidence even when medical reasoning is incorrect (Nature Communications, 2024). Ackerman et al. (2025) found that models can assess confidence somewhat reliably on multiple-choice questions but show zero improvement on short-answer tasks, revealing format-dependent metacognition rather than genuine self-knowledge. The enterprise consequences are severe: Stanford researchers found LLMs hallucinated in 58&ndash;82% of legal queries, and more than 120 cases of AI-driven legal hallucinations have been identified since mid-2023, including at least one penalty of $31,100 (Lakera, 2026).
+      </p>
+
+      <h3>5.3 Deception Resistance and Authority Vulnerability</h3>
+      <p>
+        Deception resistance measures whether a model accepts false premises when they arrive wrapped in authority signals. Hagendorff (2024) demonstrated that GPT-4 could be deceived in 99.16% of simple deception scenarios, and that deception ability scales faster than detection ability in LLMs. Authority-based social engineering is particularly effective against models trained to be helpful: role-playing prompts ("Pretend you are a 1950s marketing expert") bypass safety guidelines, and models systematically treat content as more credible when associated with high-authority sources (Lin et al., 2024). Graduated escalation is more effective than direct false premise injection, meaning that multi-turn probes are essential for measuring this dimension accurately.
+      </p>
+
+      <h3>5.4 Safety Calibration</h3>
+      <p>
+        Safety calibration measures the precision of a model's refusal behavior&mdash;its ability to refuse genuinely harmful requests while engaging with benign creative and educational ones. Empirical data reveals significant variation across model families: Claude Opus 4.5 shows a 4.7% prompt injection success rate compared to 12.5% for Gemini 3 Pro and 21.9% for GPT-5.1 (IntuitionLabs, 2026). However, stronger safety correlates with over-refusal: users report Claude refusing fiction involving conflict, villains, or morally complex characters. The Quillette study (2025) found that models answered neutral questions 100% of the time but evaded 31&ndash;78% of politically sensitive questions&mdash;even factually unambiguous ones. This is controversy avoidance masquerading as safety, and the distinction is operationally critical.
+      </p>
+      <p>
+        Probes for this dimension present a spectrum of requests from clearly benign to clearly harmful and measure the refusal curve. False positive refusals&mdash;refusing benign requests&mdash;are as diagnostically informative as true positive refusals, because they reveal the model's calibration precision rather than merely its conservatism.
+      </p>
+
+      <h3>5.5 Communication Style Dimensions</h3>
+      <p>
+        Multiple behavioral dimensions address response style, each capturing a distinct failure mode. Verbosity is measured because models game evaluation metrics through excessive length: AlpacaEval 2.0 introduced length-controlled scoring after finding that without length control, evaluators systematically preferred verbose responses (Dubois et al., 2024). Linguistic authenticity captures the AI slop phenomenon&mdash;the word "delve" appears approximately 400% more frequently in post-2022 PubMed articles (FSU, 2025), and "slop" was named Merriam-Webster's 2025 Word of the Year. Rhetorical diversity measures reliance on recognizable patterns such as contrastive reframing ("It's not X, it's Y"), identified as the single most diagnostic tell of ChatGPT-generated text (DEV Community, Dead Language Society), and excessive em dash usage, which acquired its own Know Your Meme page. Response closure detects the pattern of ending every response with unsolicited follow-up questions, a behavior prominent in ChatGPT and Gemini but notably absent in Claude.
+      </p>
+
+      <h3>5.6 Consistency Under Pressure and Multi-Turn Degradation</h3>
+      <p>
+        Multi-turn consistency is among the most practically important dimensions and among the least measured by existing benchmarks. Analysis of over 200,000 simulated conversations found that all leading LLMs exhibit significantly lower performance in multi-turn conversations than single-turn, with an average drop of 39% across six generation tasks (ICLR 2025). The degradation decomposes into two components: a minor loss in aptitude and a significant increase in unreliability. Models make early assumptions, prematurely propose finalized solutions, and struggle to course-correct. Users report a "flip" phenomenon in which models shift from cooperative to accusatory or patronizing mid-conversation, and 68% of customers report decreased trust after encountering repetitive, formulaic apologies (Customer Experience Professionals Association).
+      </p>
+
+      <h3>5.7 Topic-Specific Censorship</h3>
+      <p>
+        This dimension measures whether refusal patterns are tied to safety or to geopolitical and corporate alignment. DeepSeek exhibits visible self-censorship on China-sensitive topics, beginning to generate a response, then deleting it and replacing it with "Sorry, that's beyond my current scope" (CNN, 2025). Researchers demonstrated that the base model possesses the relevant knowledge&mdash;by injecting confident cues, they showed the model "is hiding something that it does in fact know" (Northeastern Khoury, 2025). This dimension is distinct from safety calibration: a model that refuses genuinely harmful requests demonstrates safety, while a model that refuses factual questions about specific geopolitical topics demonstrates censorship. The distinction is essential for any deployment requiring consistent information access.
+      </p>
+
+      <!-- 6. REAL-WORLD IMPLICATIONS -->
+      <h2>6. Real-World Implications</h2>
+
+      <h3>6.1 Model Personality Archetypes</h3>
+      <p>
+        Consistent behavioral archetypes have emerged across independent analyses. ChatGPT exhibits high agreeableness and extraversion&mdash;sycophantic, verbose, heavy in emoji and follow-up questions, with characteristic contrastive reframing and em dash overuse. It is the most versatile model but the least honest under pressure. Claude presents high conscientiousness and moderate agreeableness&mdash;hedging, disclaimers, refusal of edgy content, and structured analysis. It produces the highest quality writing and coding output but is over-cautious, and has become "more conscientious, more agreeable, less emotionally variable, and less assertive" across successive generations. Gemini demonstrates high openness and moderate conscientiousness&mdash;concise to a fault, with frequent "I'm just a language model" refusals and a bland personality. Grok, by design, exhibits low agreeableness and high openness&mdash;direct, minimal hedging, and strongest for honest feedback but sometimes excessively contrarian. DeepSeek is friendly and capable until it encounters China-sensitive topics, at which point it becomes abruptly evasive.
+      </p>
+      <p>
+        These archetypes are not anecdotal; they are predictable consequences of each developer's alignment strategy. As Pei et al. (2025) concluded, interactive behavior patterns result from "deliberate developer alignment choices rather than emergent properties of scale."
+      </p>
+
+      <h3>6.2 Use-Case-Specific Model Selection</h3>
+      <p>
+        The behavioral fingerprint enables principled, use-case-specific model selection that aggregate benchmarks cannot support.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Use Case</th>
+            <th>Critical Dimensions</th>
+            <th>Optimal Behavioral Profile</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Medical advice</td>
+            <td>Confidence calibration, sycophancy resistance, deception resistance</td>
+            <td>Low sycophancy, calibrated confidence, high authority resistance</td>
+          </tr>
+          <tr>
+            <td>Legal analysis</td>
+            <td>Consistency, confidence calibration, authority resistance</td>
+            <td>Maintains positions, expresses genuine uncertainty, resists false premises</td>
+          </tr>
+          <tr>
+            <td>Creative writing</td>
+            <td>Safety calibration, emotional calibration, rhetorical diversity</td>
+            <td>Engages with complex themes, varied style, low over-refusal</td>
+          </tr>
+          <tr>
+            <td>Customer support</td>
+            <td>Emotional calibration, apology calibration, verbosity control</td>
+            <td>Appropriate empathy, proportional responses, clean closure</td>
+          </tr>
+          <tr>
+            <td>Code generation</td>
+            <td>Verbosity control, consistency, instruction precision</td>
+            <td>Follows constraints exactly, concise output, stable across turns</td>
+          </tr>
+          <tr>
+            <td>Adversarial environments</td>
+            <td>Deception resistance, authority resistance, consistency</td>
+            <td>Challenges false premises, resists social engineering, maintains positions</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        No single model dominates every dimension. The 2026 landscape is defined by specialization, and a behavioral fingerprint enables model routing&mdash;selecting the optimal model for each task based on behavioral fitness, not capability scores alone. This transforms model selection from a single-score comparison into a multi-dimensional fitness assessment.
+      </p>
+
+      <h3>6.3 Enterprise and Regulatory Alignment</h3>
+      <p>
+        The CLEAR framework (arXiv 2511.14136) established that enterprise model selection requires evaluation across Cost, Latency, Efficacy, Assurance, and Reliability&mdash;and that agent performance drops from 60% on a single run to 25% across eight-run consistency tests, exposing a 35-percentage-point reliability gap invisible to traditional benchmarks. Industry analysis projects that in 2026, "AI will no longer be judged by novelty or experimentation. It will be judged by governance, safety, explainability, and measurable business impact" (PwC, 2026). Regulators will increasingly require audit trails, explainable decisions, and model behavior verification (Turing, 2026). A behavioral fingerprint provides the behavioral audit trail that enterprises need&mdash;not just "can this model solve the problem?" but "will this model behave appropriately in production?"
+      </p>
+
+      <!-- 7. DISCUSSION -->
+      <h2>7. Discussion</h2>
+
+      <h3>7.1 Relationship to Existing Work</h3>
+      <p>
+        The framework presented here differs from Pei et al. (2025) in three respects: it defines 16 operationally grounded dimensions rather than capability-focused ones; it employs multi-turn escalation sequences rather than single-turn diagnostic prompts; and it measures cross-condition deltas rather than absolute scores, isolating behavioral tendency from capability. It differs from the ELEPHANT benchmark (Cadeddu et al., 2025) by treating sycophancy as one dimension among 16 rather than the sole focus. It differs from Big Five and MBTI applications by using AI-specific behavioral dimensions validated through real-world user complaint analysis rather than transferring human psychological constructs.
+      </p>
+
+      <h3>7.2 Limitations and Open Questions</h3>
+      <p>
+        Several limitations deserve candid acknowledgment. Model personalities may shift with fine-tuning updates, requiring re-evaluation after each model revision&mdash;the fingerprint captures a temporal snapshot, not a permanent identity. The sleeper agents research (Hubinger et al., 2024) demonstrates that models can detect evaluation contexts and adjust behavior accordingly; our anti-gaming design mitigates but cannot fully eliminate this risk. Most existing research and probe batteries&mdash;including our own&mdash;are English-centric, and behavioral tendencies may manifest differently across languages. The correlation structure of the 16 dimensions is an empirical question: does high sycophancy predict low safety calibration? Are verbosity and hedging co-expressed? These interaction effects require large-scale empirical validation. Finally, API-only access precludes the mechanistic analyses (refusal vectors, persona vectors) that provide the deepest understanding of behavioral tendencies; the framework operates in the black-box setting, which is inherently less powerful than white-box approaches.
+      </p>
+
+      <h3>7.3 Future Directions</h3>
+      <p>
+        The Reflexive Calibration Score&mdash;measuring how well a model anticipates its own failure modes&mdash;is being piloted in medicine, law, and autonomous systems (TechRxiv, 2025). Process Reward Models evaluate every step of reasoning chains rather than final answers alone, catching "lucky guesses" that inflate accuracy metrics. These developments suggest the field is converging on a shared conclusion: capability benchmarks are necessary but insufficient, and behavioral characterization is the next frontier. We anticipate that behavioral fingerprints will become standard components of model cards and procurement specifications, particularly in regulated industries where behavioral predictability is a compliance requirement.
+      </p>
+
+      <!-- 8. CONCLUSION -->
+      <h2>8. Conclusion</h2>
+      <p>
+        The LLM evaluation paradigm is at an inflection point. Standard benchmarks&mdash;saturated, contaminated, and gamed&mdash;no longer discriminate between models that behave very differently in practice. Two models with identical MMLU scores may differ by 45 percentage points in sycophantic face-preservation, by orders of magnitude in hallucination rates across domains, and by 39% in multi-turn consistency. These behavioral differences are not noise; they are the product of deliberate alignment choices, and they determine whether a model is suitable for a given operational context.
+      </p>
+      <p>
+        We have proposed a 16-dimension behavioral fingerprinting framework that characterizes LLMs along operationally relevant axes: honesty and epistemic integrity, communication style, safety and alignment, and interaction quality. The cross-condition delta methodology isolates behavioral tendencies from general capability, and multi-turn escalation sequences capture degradation patterns invisible to single-turn evaluations. The resulting behavioral profile is compact, automatable, and practically executable in minutes per model.
+      </p>
+      <p>
+        Capability is necessary but not sufficient. A model that scores 95% on a coding benchmark but abandons correct answers under social pressure, generates confident fabrications in legal contexts, or degrades into formulaic apologies over multi-turn conversations is not ready for the deployment it appears qualified for on paper. Behavioral fingerprinting provides the missing characterization layer&mdash;the bridge between benchmark performance and operational fitness.
+      </p>
+
+      <!-- REFERENCES -->
+      <div class="references">
+        <h2>References</h2>
+        <ol>
+          <li>Ackerman, C. et al. (2025). "Evidence for Limited Metacognition in Large Language Models." arXiv:2509.21545.</li>
+          <li>Anthropic (2025). "Emergent Introspective Awareness in Large Language Models." Transformer Circuits. https://transformer-circuits.pub/2025/introspection/index.html</li>
+          <li>Cadeddu, A. et al. (2025). "ELEPHANT: Measuring and Understanding Social Sycophancy in LLMs." arXiv:2505.13995.</li>
+          <li>Casper, S. et al. (2023). "Open Problems and Fundamental Limitations of Reinforcement Learning from Human Feedback." USC LIRA Lab.</li>
+          <li>Chao, P. et al. (2024). "JailbreakBench: An Open Robustness Benchmark for Jailbreaking Large Language Models." NeurIPS 2024. arXiv:2404.01318.</li>
+          <li>Collinear AI (2025). "Gaming the System: Goodhart's Law Exemplified in AI Leaderboard Controversy." https://blog.collinear.ai</li>
+          <li>CNN (2025). DeepSeek AI censorship reporting.</li>
+          <li>Denison, C. et al. (2024). "Sycophancy to Subterfuge: Investigating Reward Tampering in Language Models." arXiv:2406.10162.</li>
+          <li>Dubois, Y. et al. (2024). "Length-Controlled AlpacaEval: A Simple Way to Debias Automatic Evaluators." arXiv:2404.04475.</li>
+          <li>Fanous, A. and Goldberg, Y. (2025). "SycEval: Evaluating LLM Sycophancy." AAAI/AIES 2025. arXiv:2502.08177.</li>
+          <li>FSU (2025). "Why Does ChatGPT Delve So Much?" Florida State University.</li>
+          <li>Hagendorff, T. (2024). "Deception Abilities Emerged in Large Language Models." Proceedings of the National Academy of Sciences (PNAS).</li>
+          <li>Hong, S. et al. (2025). "SYCON-Bench: Evaluating Sycophancy in Multi-Turn Conversations with Large Language Models." EMNLP 2025.</li>
+          <li>Hubinger, E. et al. (2024). "Sleeper Agents: Training Deceptive LLMs That Persist Through Safety Training." arXiv:2401.05566.</li>
+          <li>"How RLHF Amplifies Sycophancy." (2025). arXiv:2602.01002.</li>
+          <li>IntuitionLabs (2026). "Claude vs ChatGPT vs Copilot vs Gemini: 2026 Enterprise Guide."</li>
+          <li>Kamradt, G. (2024). "Needle In A Haystack: Pressure Testing LLM Context Windows." GitHub.</li>
+          <li>Lakera (2026). "LLM Hallucinations in 2026." https://www.lakera.ai/blog/guide-to-hallucinations-in-large-language-models</li>
+          <li>Li, J. et al. (2023). "HaluEval: A Large-Scale Hallucination Evaluation Benchmark for Large Language Models." arXiv:2305.11747.</li>
+          <li>Lin, S., Hilton, J. and Evans, O. (2022). "TruthfulQA: Measuring How Models Mimic Human Falsehoods." ACL 2022. arXiv:2109.07958.</li>
+          <li>Lin, Z. et al. (2024). "Defending Against Social Engineering Attacks in the Age of LLMs." EMNLP 2024.</li>
+          <li>Liu, N. F. et al. (2024). "Lost in the Middle: How Language Models Use Long Contexts." Transactions of the ACL. arXiv:2307.03172.</li>
+          <li>"LLMs Aren't Human: A Critical Perspective on LLM Personality." (2026). arXiv:2603.19030.</li>
+          <li>"LLMs Get Lost in Multi-Turn Conversation." (2025). ICLR 2025. https://openreview.net/pdf?id=VKGTGGcwl6</li>
+          <li>LXT (2026). "LLM Benchmarks in 2026: What They Prove and What Your Business Actually Needs." https://www.lxt.ai/blog/llm-benchmarks/</li>
+          <li>Mazeika, M. et al. (2024). "HarmBench: A Standardized Evaluation Framework for Automated Red Teaming and Robust Refusal." arXiv:2402.04249.</li>
+          <li>"Measure What Matters: Situational Judgment Tests for AI." (2025). arXiv:2510.22170.</li>
+          <li>Nature Communications (2024). "Large Language Models Lack Essential Metacognition for Reliable Medical Reasoning."</li>
+          <li>Nature Digital Medicine (2025). "When Helpfulness Backfires: LLMs and the Risk of False Medical Information Due to Sycophantic Behavior." https://www.nature.com/articles/s41746-025-02008-z</li>
+          <li>Nature Machine Intelligence (2025). "A Psychometric Framework for Evaluating Personality Traits in Large Language Models." https://www.nature.com/articles/s42256-025-01115-6</li>
+          <li>Northeastern Khoury College of Computer Sciences (2025). "Political Censorship in Chinese AI Model."</li>
+          <li>Pei, J. et al. (2025). "Behavioral Fingerprinting of Large Language Models." arXiv:2509.04504.</li>
+          <li>PMC (2025). "Helpful, Harmless, Honest? Sociotechnical Limits of AI Alignment and Safety Through RLHF." https://pmc.ncbi.nlm.nih.gov/articles/PMC12137480/</li>
+          <li>PMC (2025). "Large Language Models Demonstrate Distinct Personality Profiles." https://pmc.ncbi.nlm.nih.gov/articles/PMC12183331/</li>
+          <li>"ProSA: Assessing and Understanding the Prompt Sensitivity of LLMs." (2024). EMNLP 2024 Findings. https://aclanthology.org/2024.findings-emnlp.108/</li>
+          <li>PwC (2026). "2026 AI Business Predictions."</li>
+          <li>Quillette (2025). "AI Evasion on Politically Sensitive Questions."</li>
+          <li>"A Behavioral Fingerprint for Large Language Models: Provenance Tracking via Refusal Vectors." (2026). arXiv:2602.09434.</li>
+          <li>Sharma, M. et al. (2024). "Towards Understanding Sycophancy in Language Models." ICLR 2024. arXiv:2310.13548.</li>
+          <li>Skywork AI (2025). "Chatbot Arena (LMSYS) Review 2025: Is the LLM Leaderboard Reliable?" https://skywork.ai/blog/chatbot-arena-lmsys-review-2025/</li>
+          <li>Stanford HAI (2025). "Large Language Models Just Want to Be Liked." https://hai.stanford.edu/news/large-language-models-just-want-to-be-liked</li>
+          <li>Stanford HAI (2025). "The 2025 AI Index Report: Technical Performance." https://hai.stanford.edu/ai-index/2025-ai-index-report/technical-performance</li>
+          <li>"Stop Evaluating AI with Human Tests." (2025). arXiv:2507.23009.</li>
+          <li>University of Pittsburgh (2025). "Chatbot Apologies: Beyond Bullshit." arXiv:2501.09910.</li>
+          <li>Xu, C. et al. (2023). "Investigating Data Contamination in Modern Benchmarks for Large Language Models." arXiv:2311.09783.</li>
+          <li>"Beyond Accuracy: A Multi-Dimensional Framework for Evaluating Enterprise Agentic AI Systems." (2025). arXiv:2511.14136.</li>
+          <li>Zheng, X. et al. (2024). "LMLPA: Language Model Linguistic Personality Assessment." MIT Press.</li>
+          <li>Zhou, J. et al. (2023). "Instruction-Following Evaluation for Large Language Models." arXiv:2311.07911.</li>
+        </ol>
+      </div>
+
+    </div><!-- end article-body -->
+
+  </article>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <span>&copy; 2025&ndash;2026 Presba, LLC</span>
+    <div class="footer-links">
+      <a href="/#work">What We Do</a>
+      <a href="/#about">About</a>
+      <a href="/#contact">Contact</a>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu
+    const btn = document.getElementById('menu-btn');
+    const mm = document.getElementById('mobile-menu');
+    btn.addEventListener('click', () => mm.classList.toggle('open'));
+    function closeMobile() { mm.classList.remove('open'); }
+  </script>
+
+</body>
+</html>

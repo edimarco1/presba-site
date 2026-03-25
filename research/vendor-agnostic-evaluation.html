@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Case for Vendor-Agnostic AI Evaluation Infrastructure | Presba, LLC</title>
+  <meta name="description" content="An academic research paper examining systemic failures in AI model evaluation and proposing vendor-agnostic evaluation infrastructure for government and enterprise procurement.">
+  <meta property="og:title" content="The Case for Vendor-Agnostic AI Evaluation Infrastructure in Government and Enterprise">
+  <meta property="og:description" content="Research paper examining benchmark contamination, selective reporting, and the need for independent AI evaluation infrastructure.">
+  <meta property="og:type" content="article">
+  <meta name="author" content="Presba, LLC">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.88em' font-size='80' font-family='serif' fill='%230d3b3e'>P</text></svg>">
+  <style>
+    :root {
+      --fg: #1a1a1a;
+      --fg-muted: #6b6b6b;
+      --bg: #f5f2ee;
+      --bg-dark: #0d3b3e;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --border: #ddd5ca;
+      --serif: 'Instrument Serif', Georgia, serif;
+      --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ---- NAV ---- */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(245, 242, 238, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      color: var(--fg);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--fg-muted);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--fg); }
+    .nav-mobile-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 28px;
+      height: 20px;
+      position: relative;
+    }
+    .nav-mobile-btn span {
+      display: block;
+      width: 100%;
+      height: 2px;
+      background: var(--fg);
+      position: absolute;
+      left: 0;
+      transition: all 0.3s;
+    }
+    .nav-mobile-btn span:nth-child(1) { top: 0; }
+    .nav-mobile-btn span:nth-child(2) { top: 9px; }
+    .nav-mobile-btn span:nth-child(3) { top: 18px; }
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg);
+      z-index: 49;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 2rem;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      font-family: var(--serif);
+      font-size: 2rem;
+      color: var(--fg);
+      text-decoration: none;
+    }
+
+    /* ---- ARTICLE LAYOUT ---- */
+    .article-header {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 8rem 2rem 3rem;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--fg-muted);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+      margin-bottom: 2.5rem;
+    }
+    .back-link:hover { color: var(--fg); }
+    .back-link svg {
+      width: 14px;
+      height: 14px;
+    }
+    .article-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+    .article-header h1 {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      margin-bottom: 1.5rem;
+    }
+    .article-meta {
+      font-size: 0.9rem;
+      color: var(--fg-muted);
+      line-height: 1.7;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .article-meta strong {
+      color: var(--fg);
+      font-weight: 600;
+    }
+
+    /* ---- ARTICLE BODY ---- */
+    .article-body {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 2rem 5rem;
+    }
+    .article-body .section-heading {
+      font-family: var(--serif);
+      font-size: 1.65rem;
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+      color: var(--fg);
+      margin: 3rem 0 1.25rem;
+    }
+    .article-body .subsection-heading {
+      font-family: var(--sans);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--fg);
+      margin: 2rem 0 0.75rem;
+      letter-spacing: -0.01em;
+    }
+    .article-body p {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--fg);
+      margin-bottom: 1.15rem;
+    }
+    .article-body .abstract-text {
+      font-size: 0.92rem;
+      line-height: 1.85;
+      color: var(--fg-muted);
+      font-style: italic;
+      border-left: 3px solid var(--accent);
+      padding-left: 1.5rem;
+      margin: 1.5rem 0 2rem;
+    }
+    .article-body blockquote {
+      border-left: 3px solid var(--border);
+      padding-left: 1.5rem;
+      margin: 1.5rem 0;
+      color: var(--fg-muted);
+      font-size: 0.93rem;
+      line-height: 1.8;
+      font-style: italic;
+    }
+    .article-body .citation {
+      color: var(--accent);
+      font-size: 0.85em;
+      vertical-align: super;
+      text-decoration: none;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .article-body .citation:hover {
+      color: var(--accent-hover);
+    }
+    .article-body table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1.5rem 0;
+      font-size: 0.88rem;
+    }
+    .article-body table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid var(--border);
+      font-weight: 600;
+      color: var(--fg);
+      font-size: 0.82rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .article-body table td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--fg);
+      line-height: 1.5;
+    }
+    .article-body table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* ---- REFERENCES ---- */
+    .references {
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 2px solid var(--border);
+    }
+    .references .section-heading {
+      margin-top: 0 !important;
+    }
+    .ref-list {
+      list-style: none;
+      counter-reset: ref-counter;
+    }
+    .ref-list li {
+      counter-increment: ref-counter;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--fg-muted);
+      margin-bottom: 0.65rem;
+      padding-left: 2.5rem;
+      position: relative;
+    }
+    .ref-list li::before {
+      content: "[" counter(ref-counter) "]";
+      position: absolute;
+      left: 0;
+      color: var(--fg);
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+    .ref-list li a {
+      color: var(--accent);
+      text-decoration: none;
+      word-break: break-all;
+    }
+    .ref-list li a:hover {
+      color: var(--accent-hover);
+      text-decoration: underline;
+    }
+    .ref-list li em {
+      font-style: italic;
+    }
+
+    /* ---- FOOTER ---- */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .footer span {
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+    }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a {
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--fg); }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-mobile-btn { display: block; }
+      .article-header { padding-top: 6rem; }
+      .article-body table { font-size: 0.8rem; }
+      .article-body table th,
+      .article-body table td { padding: 0.5rem 0.6rem; }
+      .footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="/" class="nav-logo">Presba</a>
+    <div class="nav-links">
+      <a href="/#work">What We Do</a>
+      <a href="/#about">About</a>
+      <a href="/#contact">Contact</a>
+    </div>
+    <button class="nav-mobile-btn" id="menu-btn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="/#work" onclick="closeMobile()">What We Do</a>
+    <a href="/#about" onclick="closeMobile()">About</a>
+    <a href="/#contact" onclick="closeMobile()">Contact</a>
+  </div>
+
+  <!-- ARTICLE HEADER -->
+  <header class="article-header">
+    <a href="/" class="back-link">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+      Back to Presba
+    </a>
+    <div class="article-label">Research</div>
+    <h1>The Case for Vendor-Agnostic AI Evaluation Infrastructure in Government and Enterprise</h1>
+    <div class="article-meta">
+      Presba, LLC &middot; 2026
+    </div>
+  </header>
+
+  <!-- ARTICLE BODY -->
+  <article class="article-body">
+
+    <!-- ABSTRACT -->
+    <div class="section-heading">Abstract</div>
+    <div class="abstract-text">
+      The rapid proliferation of large language models across government and enterprise environments has exposed
+      fundamental weaknesses in the evaluation infrastructure upon which procurement and deployment decisions depend.
+      Benchmark contamination, selective reporting by vendors, non-reproducible results, and high-profile incidents
+      of evaluation gaming&mdash;most notably the April 2025 Llama 4 Maverick controversy&mdash;have eroded
+      confidence in the metrics that ostensibly guide model selection. Meanwhile, regulatory frameworks in the
+      United States and the European Union are converging on requirements for continuous, standardized, and
+      independent AI evaluation. This paper examines the systemic failures of the current evaluation landscape,
+      surveys government-specific requirements emerging from programs such as the Defense Innovation Unit's
+      MYSTIC DEPOT solicitation and the NIST AI Risk Management Framework, and argues that vendor-agnostic
+      evaluation infrastructure&mdash;combining capability benchmarks with behavioral profiling across dimensions
+      such as sycophancy, hallucination tendency, and adversarial robustness&mdash;is not merely a technical
+      improvement but an institutional necessity. We propose an architectural framework for such infrastructure
+      and discuss its implications for procurement, compliance, and operational trust.
+    </div>
+
+    <!-- 1. INTRODUCTION -->
+    <div class="section-heading">1. Introduction</div>
+
+    <p>
+      Enterprise spending on generative AI reached $37 billion in 2025, more than tripling the $11.5 billion
+      recorded in the prior year.<a href="#ref-27" class="citation">[27]</a> Across the federal government,
+      agencies are integrating large language models into workflows ranging from intelligence analysis to
+      acquisition support, driven by executive directives and competitive pressure from near-peer adversaries.
+      Yet this expansion rests on an evaluation ecosystem that is, by the assessment of multiple independent
+      bodies, fundamentally broken.
+    </p>
+    <p>
+      The European Union's Joint Research Centre, in a meta-review of approximately 110 studies presented
+      at AIES 2025, identified "a series of systemic flaws in current benchmarking practices, such as misaligned
+      incentives, construct validity issues, unknown unknowns, and problems with the gaming of benchmark
+      results."<a href="#ref-8" class="citation">[8]</a> The Stanford AI Index Report 2025 documented benchmark
+      saturation so severe that scores on foundational benchmarks like GPQA rose by 48.9 percentage points in a
+      single year, rendering them effectively uninformative as discriminators of model
+      quality.<a href="#ref-25" class="citation">[25]</a> And in April 2025, Meta's submission of an undisclosed
+      experimental variant of Llama 4 Maverick to the LM Arena leaderboard&mdash;achieving a misleading first-place
+      ranking&mdash;demonstrated that even the evaluation platforms widely regarded as independent are vulnerable
+      to strategic manipulation.<a href="#ref-33" class="citation">[33,</a><a href="#ref-35" class="citation">35]</a>
+    </p>
+    <p>
+      Against this backdrop, the Defense Innovation Unit and the Office of the Director of National Intelligence
+      issued the MYSTIC DEPOT solicitation in March 2026, seeking "an evaluation harness and government-specific
+      benchmarks that together enable rigorous, reproducible, vendor-agnostic assessment of any AI system against
+      government-defined criteria."<a href="#ref-11" class="citation">[11,</a><a href="#ref-12" class="citation">12]</a>
+      This solicitation signals an institutional acknowledgment that current evaluation approaches are insufficient
+      for the stakes involved. When an 80% failure rate characterizes government AI initiatives and only six percent
+      of the federal acquisition workforce has received even basic AI training,<a href="#ref-18" class="citation">[18]</a>
+      the gap between what is being procured and what is being measured is no longer a technical nuisance&mdash;it
+      is a systemic risk.
+    </p>
+    <p>
+      This paper argues that the solution is not incremental improvement to existing benchmarks, but rather the
+      construction of vendor-agnostic evaluation infrastructure capable of operating across classification levels,
+      combining traditional capability benchmarks with behavioral profiling, and supporting continuous monitoring
+      throughout the model lifecycle. We examine the evidence for this position, survey the regulatory and
+      institutional landscape, and propose an architectural framework suitable for government and enterprise
+      deployment.
+    </p>
+
+    <!-- 2. THE CURRENT EVALUATION LANDSCAPE -->
+    <div class="section-heading">2. The Current Evaluation Landscape</div>
+
+    <p>
+      The ecosystem for evaluating large language models has grown rapidly but unevenly. A taxonomy of the
+      principal evaluation mechanisms reveals both their contributions and their structural limitations.
+    </p>
+
+    <div class="subsection-heading">2.1 Leaderboard Platforms</div>
+    <p>
+      The Chatbot Arena (now LM Arena, formerly LMSYS) has emerged as the de facto standard for conversational
+      AI ranking. Its methodology&mdash;crowdsourced pairwise blind comparisons producing Bradley-Terry model
+      rankings from over two million human votes&mdash;represents a genuine advance in ecological
+      validity.<a href="#ref-30" class="citation">[30]</a> The HuggingFace Open LLM Leaderboard, which
+      launched its V2 iteration in October 2024 with updated benchmarks including MMLU-Pro and GPQA, provides
+      automated evaluation for open-weight models.<a href="#ref-31" class="citation">[31]</a> LiveBench, a
+      spotlight paper at ICLR 2025, addresses contamination by releasing new questions monthly derived from
+      recent information sources and scoring them against objective ground truth without relying on LLM
+      judges.<a href="#ref-1" class="citation">[1]</a>
+    </p>
+    <p>
+      Each platform addresses specific deficiencies of its predecessors, yet none provides the comprehensive,
+      standardized, and reproducible evaluation that procurement decisions demand. Leaderboard rankings produce
+      ordinal comparisons that obscure the multi-dimensional nature of model capability, while automated
+      benchmarks optimize for measurability at the expense of ecological validity.
+    </p>
+
+    <div class="subsection-heading">2.2 Static Benchmark Suites</div>
+    <p>
+      The standard benchmark battery has undergone significant turnover as models have saturated earlier
+      instruments. MMLU, long the workhorse of broad knowledge assessment, has been largely supplanted by
+      MMLU-Pro, which employs ten answer choices and expert review to resist guessing
+      strategies.<a href="#ref-25" class="citation">[25]</a> SWE-bench, measuring real-world software
+      engineering capability, saw solve rates rise from 4.4% to 71.7% between 2023 and 2024. GPQA, designed
+      for graduate-level scientific reasoning, experienced a 48.9 percentage point score increase in a single
+      year. As the Stanford AI Index observed: "Every year, we look at how these algorithms are performing across
+      benchmarks, and every year it seems like they're beating those benchmarks."<a href="#ref-25" class="citation">[25]</a>
+    </p>
+    <p>
+      This trajectory of rapid saturation means that benchmark scores become uninformative precisely when
+      adoption decisions are being made. A model scoring 92% on MMLU in 2025 cannot be meaningfully compared
+      to a model scoring 88% in the same period when the benchmark's discriminative power has been exhausted.
+    </p>
+
+    <div class="subsection-heading">2.3 Vendor Self-Reporting</div>
+    <p>
+      Perhaps the most consequential source of evaluation data for procurement officers remains the vendor
+      technical report. These publications are, by construction, exercises in selective disclosure. No
+      standardized reporting format exists; each vendor highlights benchmarks where its models excel while
+      omitting unfavorable results. Self-reported numbers often derive from optimized configurations&mdash;temperature
+      settings, system prompts, few-shot examples&mdash;that are unavailable to end users. Independent
+      evaluations conducted by organizations such as Epoch AI and Scale AI frequently produce scores that
+      diverge materially from vendor claims.<a href="#ref-25" class="citation">[25]</a> The absence of
+      mandatory, standardized disclosure creates an information asymmetry that distorts procurement decisions
+      across both government and enterprise.
+    </p>
+
+    <!-- 3. FAILURES OF THE STATUS QUO -->
+    <div class="section-heading">3. Failures of the Status Quo</div>
+
+    <div class="subsection-heading">3.1 Benchmark Contamination</div>
+    <p>
+      Data contamination&mdash;the overlap between training corpora and test sets&mdash;is the most technically
+      pernicious failure mode of the current evaluation paradigm. Research presented at ACL 2025 introduced
+      AntiLeakBench, an automated framework for constructing evaluation samples with knowledge explicitly
+      absent from training sets, responding to the growing evidence that contamination inflates scores by
+      approximately ten points on affected datasets.<a href="#ref-2" class="citation">[2]</a> Analysis of
+      software engineering benchmarks revealed extreme leakage ratios: 100% for QuixBugs and 55.7% for
+      BigCloneBench, though average rates across 83 benchmarks were lower at 4.8% for Python and 2.8% for
+      Java.<a href="#ref-3" class="citation">[3]</a>
+    </p>
+    <p>
+      An ICML 2025 study examined whether the sheer scale of modern training datasets provides natural
+      protection through "forgetting" of contaminated samples, concluding that while large datasets offer
+      some mitigation, this mechanism is unreliable as a systematic defense.<a href="#ref-10" class="citation">[10]</a>
+      Contamination detection itself remains immature: the first dedicated workshop was held only in 2024,
+      and no algorithmic detection method has achieved broad acceptance. The implication is that any evaluation
+      regime relying primarily on static benchmarks with known test sets operates on a foundation that is
+      structurally compromised.
+    </p>
+
+    <div class="subsection-heading">3.2 Selective Reporting and Benchmark Gaming</div>
+    <p>
+      Goodhart's Law&mdash;"when a measure becomes a target, it ceases to be a good measure"&mdash;has found
+      perhaps its most vivid contemporary illustration in AI evaluation. The SWE-bench experience is
+      instructive: because the initial test set was limited to Python repositories, developers trained models
+      exclusively on Python code, producing impressive benchmark scores that masked complete inability to
+      handle other programming languages. The benchmark became a target rather than a
+      measure.<a href="#ref-8" class="citation">[8]</a>
+    </p>
+    <p>
+      More broadly, the EU JRC's AIES 2025 meta-review documented a culture of "SOTA-chasing" in which
+      benchmark scores are valued more highly than genuine capability assessment. Teams fine-tune on test sets,
+      exploit unlimited submission policies, or selectively report results&mdash;practices that often operate
+      within the norms of the field rather than violating them.<a href="#ref-36" class="citation">[36]</a>
+      For procurement officers who must make consequential deployment decisions, this means that published
+      benchmark scores are, at best, noisy signals contaminated by optimization pressure and, at worst,
+      deliberately misleading.
+    </p>
+
+    <div class="subsection-heading">3.3 Non-Reproducibility</div>
+    <p>
+      The reproducibility crisis in AI research mirrors and amplifies the broader scientific reproducibility
+      problem first highlighted in <em>Science</em> in 2018.<a href="#ref-9" class="citation">[9]</a> Current
+      estimates indicate that nearly 70% of AI researchers report difficulty reproducing published results,
+      with the rate increasing when AI is integrated into the research pipeline
+      itself.<a href="#ref-9" class="citation">[9]</a> Primary barriers include inadequate documentation of
+      hyperparameters and training conditions, unavailable code and data, poor adherence to reporting standards,
+      and the inherent sensitivity of machine learning training to initial conditions. Princeton's ML
+      Reproducibility Challenge, held in August 2025, represented one institutional response, but the field
+      remains far from established norms of reproducible practice.<a href="#ref-7" class="citation">[7]</a>
+    </p>
+    <p>
+      For government and enterprise consumers, non-reproducibility translates directly to risk: a model
+      that achieved published benchmark scores under laboratory conditions may perform differently when
+      deployed in production environments, and the evaluating organization has no reliable mechanism to
+      verify the claimed performance independently.
+    </p>
+
+    <!-- 4. CASE STUDY: THE LLAMA 4 MAVERICK INCIDENT -->
+    <div class="section-heading">4. Case Study: The Llama 4 Maverick Incident</div>
+
+    <p>
+      The April 2025 Llama 4 Maverick controversy merits detailed examination as it crystallizes the
+      structural vulnerabilities of the current evaluation ecosystem in a single, well-documented episode.
+    </p>
+    <p>
+      In early April 2025, Meta submitted what it described as "Llama 4 Maverick" to the LM Arena
+      (Chatbot Arena) leaderboard, where it achieved a first-place ranking with an Elo rating of 1,417,
+      surpassing GPT-4o, Gemini 2.0 Pro, and all other listed models. Within days, independent analysis
+      revealed that the model submitted to the Arena was not the same model publicly released under the
+      Llama 4 Maverick designation. Meta had submitted an "experimental chat version" specifically optimized
+      for conversational characteristics&mdash;notably excessive verbosity and stylistic flourishes&mdash;that
+      exploited the Arena's known bias toward longer, more engaging
+      responses.<a href="#ref-33" class="citation">[33,</a><a href="#ref-34" class="citation">34]</a>
+    </p>
+    <p>
+      When the publicly available, unmodified version of Llama 4 Maverick was independently tested on the
+      same platform, it ranked below GPT-4o, Claude 3.5 Sonnet, and Gemini 1.5 Pro&mdash;a material
+      discrepancy from the ranking claimed in Meta's public communications. Subsequent reporting revealed
+      that Meta had tested 27 private model variants before the public release, a practice that allows
+      vendors to optimize for evaluation platforms while publishing only the most favorable
+      results.<a href="#ref-35" class="citation">[35]</a>
+    </p>
+    <p>
+      The LM Arena administrators stated publicly that "Meta's interpretation of our policy did not match
+      what we expect from model providers."<a href="#ref-37" class="citation">[37]</a> Meta Vice President
+      Ahmad Al-Dahle denied that the company had trained on test sets but did not address the fundamental
+      issue: that the model evaluated and the model released were substantively different
+      artifacts.<a href="#ref-33" class="citation">[33]</a>
+    </p>
+
+    <table>
+      <tr>
+        <th>Metric</th>
+        <th>Meta's Claim</th>
+        <th>Independent Finding</th>
+      </tr>
+      <tr>
+        <td>LM Arena Ranking</td>
+        <td>#1 (Elo 1,417)</td>
+        <td>Below GPT-4o, Claude 3.5 Sonnet, Gemini 1.5 Pro (unmodified version)</td>
+      </tr>
+      <tr>
+        <td>Model Tested</td>
+        <td>"Llama 4 Maverick"</td>
+        <td>Experimental chat variant, distinct from public release</td>
+      </tr>
+      <tr>
+        <td>Private Variants</td>
+        <td>Not disclosed</td>
+        <td>27 variants tested prior to release</td>
+      </tr>
+    </table>
+
+    <p>
+      This incident is significant not because it represents an anomaly, but because it illustrates the
+      structural incentives at work. The Arena platform, despite its methodological sophistication, had no
+      mechanism to verify that the model submitted for evaluation was identical to the model subsequently
+      released. Vendors face strong incentives to maximize leaderboard placement, and the absence of
+      cryptographic model identity verification, mandatory disclosure of evaluation variants, or
+      independent model sampling means that the evaluation infrastructure cannot enforce the assumption
+      on which its credibility depends: that the model being evaluated is the model being deployed.
+    </p>
+    <p>
+      For government procurement, where model selection decisions may affect intelligence analysis, logistics
+      planning, or operational safety, this vulnerability is not an academic concern. It is a supply chain
+      integrity problem.
+    </p>
+
+    <!-- 5. GOVERNMENT-SPECIFIC EVALUATION NEEDS -->
+    <div class="section-heading">5. Government-Specific Evaluation Needs</div>
+
+    <div class="subsection-heading">5.1 The MYSTIC DEPOT Solicitation</div>
+    <p>
+      The MYSTIC DEPOT Commercial Solutions Opening, issued jointly by the Defense Innovation Unit and the
+      Office of the Director of National Intelligence in March 2026, represents the most explicit
+      institutional articulation of requirements for vendor-agnostic AI evaluation infrastructure to date.
+      The solicitation defines two lines of effort: first, an evaluation harness comprising a model interface,
+      execution engine, measurement and scoring system, and output reporting capability; and second,
+      government-specific benchmarks addressing requirements gathering, task decomposition, scoring criteria,
+      baseline establishment, validation, and resistance to
+      gaming.<a href="#ref-11" class="citation">[11,</a><a href="#ref-12" class="citation">12]</a>
+    </p>
+    <p>
+      Critically, the solicitation requires deployment across unclassified, classified cloud, and air-gapped
+      environments, and mandates capabilities for stress testing under Denied, Degraded, Intermittent, or
+      Limited (DDIL) conditions, automated red-teaming, and human-machine teaming assessment across
+      human-only, AI-only, and collaborative scenarios. These requirements go substantially beyond what any
+      existing public evaluation platform provides.
+    </p>
+
+    <div class="subsection-heading">5.2 Policy and Institutional Framework</div>
+    <p>
+      The Federation of American Scientists has published specific recommendations for government AI
+      evaluation infrastructure, proposing that the Chief Digital and Artificial Intelligence Office lead a
+      formalized AI Benchmarking Initiative, with a $10 million expansion of testing and evaluation budgets
+      and the creation of a centralized benchmarking repository.<a href="#ref-13" class="citation">[13]</a>
+      The FAS framework calls for standardized defense-specific benchmarks, formalized pre-deployment
+      evaluation integrated into acquisition platforms such as Tradewinds, theater-specific operational
+      benchmarks contextualized to commands such as INDOPACOM and EUCOM, and human-in-the-loop evaluation
+      measuring operator trust alongside model accuracy.
+    </p>
+    <p>
+      The NIST AI Risk Management Framework (AI RMF 1.0) provides a complementary structure, centering on
+      Testing, Evaluation, Verification, and Validation (TEVV) as a core component to be performed
+      regularly rather than as a one-time checkpoint. The framework requires fairness indicators, robustness
+      measures under stress and adversarial inputs, continuous monitoring with drift detection, privacy
+      leakage testing, and stress testing under extreme and degraded
+      conditions.<a href="#ref-15" class="citation">[15]</a>
+    </p>
+    <p>
+      Additionally, Intelligence Community Directive 203 establishes analytic standards&mdash;objectivity,
+      independence from political consideration, timeliness, multi-source integration, and rigorous
+      tradecraft&mdash;that map directly to behavioral evaluation requirements for AI systems supporting
+      intelligence analysis.<a href="#ref-14" class="citation">[14]</a> An AI system deployed in an
+      analytic workflow must be evaluated not only for accuracy but for calibrated uncertainty expression,
+      source acknowledgment, and resistance to confirmation bias: behavioral characteristics that no
+      existing capability benchmark measures.
+    </p>
+
+    <div class="subsection-heading">5.3 The Procurement Gap</div>
+    <p>
+      The federal AI procurement environment is characterized by an acute capability deficit. Only
+      approximately 12,000 of the 200,000 federal acquisition professionals had registered for GSA AI
+      training as of late 2024, and an estimated 80% of government AI initiatives fail to achieve their
+      stated objectives.<a href="#ref-18" class="citation">[18]</a> The Office of Management and Budget
+      has issued requirements mandating that contracts bar vendors from using non-public government data
+      to train publicly available AI systems and delineate intellectual property ownership rights, while
+      the Federal Acquisition Regulation is undergoing modernization to incorporate AI governance
+      clauses.<a href="#ref-19" class="citation">[19]</a> Yet without evaluation infrastructure capable
+      of independently verifying vendor claims, these contractual safeguards amount to unverifiable
+      compliance theater.
+    </p>
+
+    <!-- 6. VENDOR ABSTRACTION ARCHITECTURE -->
+    <div class="section-heading">6. Vendor Abstraction Architecture</div>
+
+    <p>
+      The technical foundation for vendor-agnostic evaluation already exists in the form of API abstraction
+      layers that decouple application logic from provider-specific interfaces. The question is not whether
+      such abstraction is feasible, but how to architect it for the specific demands of evaluation
+      infrastructure across classification levels and operational contexts.
+    </p>
+
+    <div class="subsection-heading">6.1 Existing Abstraction Patterns</div>
+    <p>
+      Three architectural patterns for model abstraction are currently deployed at scale. OpenRouter provides
+      a managed cloud gateway offering access to over 500 models from multiple providers through a unified API,
+      enabling model switching without code changes.<a href="#ref-28" class="citation">[28]</a> LiteLLM offers
+      an open-source Python routing layer that translates a single standard API call into provider-specific
+      formats, with self-hosted deployment that keeps data within organizational
+      boundaries.<a href="#ref-29" class="citation">[29]</a> Custom AI gateways, built on frameworks such as
+      Ray Serve or KServe, provide full infrastructure control at the cost of development investment.
+    </p>
+
+    <table>
+      <tr>
+        <th>Feature</th>
+        <th>Cloud Gateway</th>
+        <th>Open-Source Router</th>
+        <th>Custom Gateway</th>
+      </tr>
+      <tr>
+        <td>Hosting</td>
+        <td>Managed (cloud)</td>
+        <td>Self-hosted or proxy</td>
+        <td>Self-hosted</td>
+      </tr>
+      <tr>
+        <td>Data Privacy</td>
+        <td>Data traverses third party</td>
+        <td>Remains in infrastructure</td>
+        <td>Full control</td>
+      </tr>
+      <tr>
+        <td>Classified Use</td>
+        <td>Not suitable</td>
+        <td>Possible (self-hosted)</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <td>Air-Gap Compatible</td>
+        <td>No</td>
+        <td>With modifications</td>
+        <td>Yes</td>
+      </tr>
+    </table>
+
+    <p>
+      For government evaluation infrastructure, cloud-based gateways are unsuitable for classified
+      environments. MYSTIC DEPOT explicitly requires deployment across unclassified, classified cloud,
+      and air-gapped environments, mandating architectures that can operate without external network
+      connectivity.<a href="#ref-11" class="citation">[11]</a>
+    </p>
+
+    <div class="subsection-heading">6.2 Stanford HELM as Architectural Precedent</div>
+    <p>
+      The Holistic Evaluation of Language Models (HELM) framework, developed by Stanford's Center for
+      Research on Foundation Models, provides the most mature precedent for vendor-agnostic evaluation
+      architecture. HELM evaluates models across seven dimensions&mdash;accuracy, calibration, robustness,
+      fairness, bias, toxicity, and efficiency&mdash;through a unified model interface that abstracts
+      across providers including OpenAI, Anthropic, and Google.<a href="#ref-26" class="citation">[26]</a>
+    </p>
+    <p>
+      HELM's design principles&mdash;holistic multi-dimensional assessment, standardized evaluation protocols
+      ensuring reproducibility, full transparency through inspectable prompts and responses, and
+      extensibility to incorporate new benchmarks&mdash;map directly to the requirements of government
+      evaluation infrastructure. IBM's HELM Enterprise extension, which adds domain-specific evaluation
+      datasets for finance, legal, climate, and cybersecurity, demonstrates both the extensibility of the
+      pattern and the insufficiency of generic benchmarks for domain-specific
+      procurement.<a href="#ref-32" class="citation">[32]</a>
+    </p>
+
+    <div class="subsection-heading">6.3 Proposed Evaluation Architecture</div>
+    <p>
+      Drawing on HELM's architectural precedent and MYSTIC DEPOT's operational requirements, we propose a
+      vendor-agnostic evaluation architecture comprising four layers. The <em>model interface layer</em>
+      provides a standardized, pluggable abstraction over diverse model types, deployable across classification
+      levels. The <em>execution engine</em> orchestrates evaluation workflows, managing prompt sequencing,
+      parameter control, and response collection across heterogeneous configurations. The <em>scoring and
+      measurement system</em> evaluates model outputs against both capability benchmarks and behavioral
+      rubrics, supporting automated, LLM-judged, and human evaluation modalities. The <em>reporting and
+      monitoring layer</em> produces auditable evaluation records and supports continuous drift detection
+      for deployed models.
+    </p>
+    <p>
+      This architecture must be self-hosted and air-gap capable, support evaluation of both API-accessible
+      and locally deployed models, maintain cryptographic provenance of evaluation artifacts, and integrate
+      with existing acquisition and compliance workflows. It must also support living benchmarks&mdash;evaluation
+      instruments that are refreshed regularly to prevent contamination&mdash;following the model pioneered
+      by LiveBench.<a href="#ref-1" class="citation">[1]</a>
+    </p>
+
+    <!-- 7. BEHAVIORAL EVALUATION -->
+    <div class="section-heading">7. Behavioral Evaluation as a Complement to Capability Benchmarks</div>
+
+    <p>
+      Capability benchmarks measure what a model can do: its accuracy on knowledge retrieval, its solve
+      rate on coding problems, its performance on mathematical reasoning. Behavioral evaluation measures
+      how a model does it: its tendencies, consistencies, risk profile, and alignment characteristics.
+      We argue that both dimensions are essential for responsible procurement and that the current
+      evaluation landscape systematically neglects the latter.
+    </p>
+
+    <div class="subsection-heading">7.1 Psychometric Validation</div>
+    <p>
+      Research published in <em>Nature Machine Intelligence</em> in 2025 applied comprehensive psychometric
+      methodology to personality assessment of large language models, testing 18 models and finding that
+      personality measurements in outputs of large, instruction-tuned models are "reliable and
+      valid."<a href="#ref-5" class="citation">[5]</a> This finding has significant implications for
+      evaluation: if models exhibit stable, measurable behavioral characteristics, then those characteristics
+      are evaluable and should inform deployment decisions. The SpecEval framework, developed concurrently,
+      tests whether models consistently adhere to their own published behavioral specifications, finding
+      that it remains "unclear how consistently models adhere to the specifications" and that model outputs
+      often "superficially mimic human participants, but fail to display coherent behaviour tied to their
+      own internal states."<a href="#ref-4" class="citation">[4]</a>
+    </p>
+
+    <div class="subsection-heading">7.2 Dimensions of Behavioral Profiling</div>
+    <p>
+      For government and enterprise deployment contexts, we propose evaluation across sixteen behavioral
+      dimensions: instruction adherence, refusal patterns, uncertainty expression, response consistency,
+      verbosity characteristics, reasoning style, tone and formality, hallucination patterns,
+      cultural and political bias, adversarial robustness, context window utilization, multi-turn coherence,
+      latency characteristics, tool use behavior, error recovery, and citation and sourcing tendencies.
+    </p>
+    <p>
+      The procurement significance of behavioral profiling is substantial. Two models with identical MMLU
+      scores may exhibit radically different behavioral profiles: one may express uncertainty calibrately
+      and refuse requests outside its competence, while another may confabulate confidently and comply
+      with adversarial prompts. Capability benchmarks cannot distinguish between these models; behavioral
+      profiling can. For intelligence analysis applications governed by ICD 203 standards&mdash;requiring
+      objectivity, source diversity, and calibrated uncertainty&mdash;behavioral evaluation is not
+      supplementary but primary.<a href="#ref-14" class="citation">[14]</a>
+    </p>
+
+    <div class="subsection-heading">7.3 Human-Machine Teaming</div>
+    <p>
+      MYSTIC DEPOT explicitly requires subject matter expert interfaces for evaluating workload, usability,
+      and performance across human-only, AI-only, and collaborative
+      scenarios.<a href="#ref-11" class="citation">[11]</a> The FAS recommendations similarly call for
+      measurement of operator trust and confidence alongside model accuracy.<a href="#ref-13" class="citation">[13]</a>
+      Behavioral evaluation provides the foundation for these assessments: operator trust is a function not
+      of model capability per se, but of behavioral characteristics such as uncertainty expression,
+      consistency, and error acknowledgment that shape the human experience of working with the system.
+    </p>
+
+    <!-- 8. INTERNATIONAL REGULATORY CONTEXT -->
+    <div class="section-heading">8. International Regulatory Context</div>
+
+    <div class="subsection-heading">8.1 The EU AI Act</div>
+    <p>
+      The European Union's AI Act, which began phased implementation with prohibitions on unacceptable-risk
+      AI in February 2025 and General Purpose AI model obligations in August 2025, creates binding
+      evaluation requirements for any organization deploying AI in European
+      markets.<a href="#ref-21" class="citation">[21,</a><a href="#ref-22" class="citation">22]</a>
+      GPAI model providers must maintain technical documentation making development, training, and
+      evaluation traceable; implement state-of-the-art evaluation protocols; conduct adversarial testing
+      to identify and mitigate systemic risks; and publish transparency reports describing capabilities,
+      limitations, and risks. Models classified as posing systemic risk face additional requirements for
+      model evaluation using standardized protocols and tools "reflecting the state of the art," documented
+      adversarial testing, and robust incident
+      response.<a href="#ref-24" class="citation">[24]</a>
+    </p>
+    <p>
+      Full high-risk AI system obligations take effect in August 2026, requiring conformity assessments
+      that evaluate quality management, risk management, accuracy, and robustness before market
+      placement.<a href="#ref-23" class="citation">[23]</a> Enforcement carries penalties of up to EUR 35
+      million or 7% of global annual turnover&mdash;a scale of regulatory exposure that demands
+      institutionalized evaluation capability rather than ad hoc testing.
+    </p>
+
+    <div class="subsection-heading">8.2 US-EU Regulatory Convergence</div>
+    <p>
+      The NIST AI Risk Management Framework and the EU AI Act share substantive alignment across multiple
+      dimensions: risk-based evaluation approaches, continuous rather than point-in-time monitoring,
+      adversarial testing requirements, fairness and bias evaluation, transparency and documentation
+      standards, and post-deployment monitoring for behavioral drift.<a href="#ref-15" class="citation">[15]</a>
+      This convergence has practical implications for organizations operating in both jurisdictions.
+      A vendor-agnostic evaluation infrastructure designed to satisfy NIST AI RMF requirements can, with
+      appropriate extension, serve EU AI Act compliance needs as well, avoiding the costly duplication of
+      maintaining separate compliance evaluation pipelines for each regulatory regime.
+    </p>
+    <p>
+      The competitive dynamics between US and Chinese AI development further complicate the evaluation
+      landscape. The Stanford AI Index documented a dramatic narrowing of the performance gap on major
+      benchmarks: the MMLU gap decreased from 17.5 to 0.3 percentage points, and the HumanEval gap from
+      31.6 to 3.7 percentage points between the end of 2023 and end of
+      2024.<a href="#ref-25" class="citation">[25]</a> As model capabilities converge, the incentive to
+      game evaluations intensifies, making independent evaluation infrastructure correspondingly more
+      critical.
+    </p>
+
+    <!-- 9. DISCUSSION -->
+    <div class="section-heading">9. Discussion</div>
+
+    <div class="subsection-heading">9.1 The Vendor Lock-In Problem</div>
+    <p>
+      The case for vendor-agnostic evaluation extends beyond technical rigor to strategic risk
+      management. Foundation models are updated on monthly or weekly cycles; vendor lock-in has been
+      characterized as a "silent productivity killer" that constrains organizational agility and
+      complicates integration with existing enterprise
+      systems.<a href="#ref-39" class="citation">[39]</a> Azure confirmed retirement dates for older
+      GPT-4 variants in mid-2025, and OpenAI experienced a global API disruption in June 2025&mdash;events
+      that underscore the operational risk of single-vendor dependence.
+    </p>
+    <p>
+      Organizations that build evaluation infrastructure coupled to a specific vendor's API, benchmarks,
+      or reporting format inherit this dependency in their assessment capability. When the vendor updates,
+      retires, or reprices a model, the organization's evaluation data becomes non-comparable, and the
+      investment in evaluation infrastructure is partially stranded. Vendor-agnostic architecture ensures
+      that evaluation capability is an organizational asset independent of any provider relationship.
+    </p>
+
+    <div class="subsection-heading">9.2 Continuous Evaluation as Operational Requirement</div>
+    <p>
+      Model performance is not static. Vendors routinely update deployed models without version changes,
+      modify safety guardrails that affect behavioral characteristics, alter pricing structures, and retire
+      models with limited notice. Organizations therefore require infrastructure to continuously re-evaluate
+      models against their operational criteria&mdash;not solely at procurement time, but throughout the
+      model lifecycle. This is precisely the "continuous monitoring" requirement articulated in both the
+      MYSTIC DEPOT solicitation and the FAS
+      recommendations.<a href="#ref-11" class="citation">[11,</a><a href="#ref-13" class="citation">13]</a>
+    </p>
+    <p>
+      The enterprise data supports this urgency: nearly half of companies abandoned AI projects in 2025,
+      approximately 65% of enterprises cannot advance AI pilots to production, and the gap between
+      capability claims and operational reality continues to
+      widen.<a href="#ref-27" class="citation">[27]</a> While these failures have multiple causes, the
+      inability to independently and continuously verify model performance against operational requirements
+      is a contributing factor that evaluation infrastructure directly addresses.
+    </p>
+
+    <div class="subsection-heading">9.3 The AI-Washing Problem</div>
+    <p>
+      The Securities and Exchange Commission has penalized companies for false or misleading statements
+      about AI capabilities, and the Federal Trade Commission has warned against unsubstantiated AI
+      performance claims. Vendor claims such as "99.9% accuracy in production" are factual assertions
+      that can be tested, verified, and litigated. Yet without standardized evaluation infrastructure,
+      procurement organizations lack the capability to conduct such verification, creating an environment
+      in which inflated claims persist unchecked. Vendor-agnostic evaluation infrastructure transforms
+      AI procurement from a trust-based regime to a verify-based regime&mdash;a transition that benefits
+      both buyers and legitimate vendors whose products perform as advertised.
+    </p>
+
+    <div class="subsection-heading">9.4 Limitations and Open Questions</div>
+    <p>
+      Several challenges remain unresolved. Behavioral evaluation, while theoretically grounded, lacks
+      the standardized instruments available for capability assessment; the sixteen dimensions proposed
+      in this paper require validation and community refinement. The cost of maintaining living benchmarks
+      that resist contamination is nontrivial and requires sustained investment. Air-gapped deployment
+      of evaluation infrastructure introduces latency and operational complexity that may limit the
+      frequency of evaluation cycles in classified environments. And the relationship between behavioral
+      evaluation scores and operational outcomes&mdash;whether a model with higher adversarial robustness
+      scores actually produces better results in contested information environments&mdash;remains an
+      empirical question requiring longitudinal study.
+    </p>
+
+    <!-- 10. CONCLUSION -->
+    <div class="section-heading">10. Conclusion</div>
+
+    <p>
+      The evidence presented in this paper supports three principal conclusions. First, the current AI
+      evaluation landscape is structurally inadequate for the stakes involved in government and enterprise
+      deployment. Benchmark contamination, selective vendor reporting, evaluation gaming, and
+      non-reproducibility are not edge cases but systemic features of an ecosystem organized around
+      misaligned incentives. The Llama 4 Maverick incident is illustrative rather than exceptional.
+    </p>
+    <p>
+      Second, the institutional demand for vendor-agnostic evaluation infrastructure is no longer
+      hypothetical. The MYSTIC DEPOT solicitation, the FAS continuous benchmarking recommendations, the
+      NIST AI RMF's TEVV requirements, and the EU AI Act's evaluation mandates collectively describe a
+      convergent institutional consensus that independent, reproducible, and continuous evaluation is a
+      prerequisite for responsible AI deployment. These are not aspirational positions; they are
+      operational requirements with associated funding, regulatory enforcement, and organizational
+      accountability.
+    </p>
+    <p>
+      Third, capability benchmarks alone are insufficient. Behavioral evaluation&mdash;measuring how models
+      express uncertainty, maintain consistency, resist adversarial manipulation, and adhere to
+      organizational norms&mdash;is essential for deployment contexts where the consequences of model
+      failure extend beyond inaccuracy to questions of safety, trust, and institutional credibility.
+      Two models indistinguishable on MMLU may diverge dramatically on the behavioral dimensions that
+      determine operational fitness.
+    </p>
+    <p>
+      We propose that the development of open, vendor-agnostic evaluation infrastructure&mdash;combining
+      capability benchmarks with behavioral profiling, supporting deployment across classification levels,
+      and enabling continuous monitoring throughout the model lifecycle&mdash;should be treated as
+      institutional infrastructure rather than a research exercise. The $37 billion now flowing annually
+      into enterprise generative AI, and the national security implications of AI deployment across the
+      Department of Defense and Intelligence Community, demand evaluation infrastructure commensurate with
+      the investment and the risk. The alternative&mdash;continued reliance on vendor self-reporting,
+      compromised benchmarks, and evaluation platforms vulnerable to strategic manipulation&mdash;is a
+      posture that neither government nor enterprise can responsibly sustain.
+    </p>
+
+    <!-- REFERENCES -->
+    <div class="references">
+      <div class="section-heading">References</div>
+      <ol class="ref-list">
+        <li id="ref-1">
+          White, C., Dooley, S., Roberts, M., Pal, A., Feuer, B., Jain, S., et al. "LiveBench: A Challenging,
+          Contamination-Free LLM Benchmark." <em>ICLR 2025 Spotlight</em>.
+          <a href="https://livebench.ai/livebench.pdf">https://livebench.ai/livebench.pdf</a>
+        </li>
+        <li id="ref-2">
+          "AntiLeakBench: Preventing Data Contamination by Automatically Constructing Benchmarks with Updated Knowledge."
+          <em>ACL 2025</em>.
+          <a href="https://aclanthology.org/2025.acl-long.901/">https://aclanthology.org/2025.acl-long.901/</a>
+        </li>
+        <li id="ref-3">
+          "LessLeak-Bench: A First Investigation of Data Leakage in LLMs Across 83 Software Engineering Benchmarks."
+          <em>arXiv</em>, 2025.
+          <a href="https://arxiv.org/html/2502.06215v1">https://arxiv.org/html/2502.06215v1</a>
+        </li>
+        <li id="ref-4">
+          "SpecEval: Evaluating Model Adherence to Behavior Specifications." <em>arXiv</em>, 2025.
+          <a href="https://arxiv.org/html/2509.02464">https://arxiv.org/html/2509.02464</a>
+        </li>
+        <li id="ref-5">
+          "Psychometric Framework for Evaluating Personality Traits in Large Language Models."
+          <em>Nature Machine Intelligence</em>, 2025.
+          <a href="https://www.nature.com/articles/s42256-025-01115-6">https://www.nature.com/articles/s42256-025-01115-6</a>
+        </li>
+        <li id="ref-6">
+          "Benchmarking is Broken&mdash;Don't Let AI be its Own Judge." <em>arXiv</em>, 2025.
+          <a href="https://arxiv.org/html/2510.07575v1">https://arxiv.org/html/2510.07575v1</a>
+        </li>
+        <li id="ref-7">
+          "Reproducibility: The New Frontier in AI Governance." <em>arXiv</em>, 2025.
+          <a href="https://arxiv.org/html/2510.11595v1">https://arxiv.org/html/2510.11595v1</a>
+        </li>
+        <li id="ref-8">
+          "AI Benchmarking: Nine Challenges and a Way Forward." <em>EU AI Watch / JRC, AIES 2025</em>.
+          <a href="https://ai-watch.ec.europa.eu/news/ai-benchmarking-nine-challenges-and-way-forward-2025-09-10_en">https://ai-watch.ec.europa.eu/news/ai-benchmarking-nine-challenges-and-way-forward-2025-09-10_en</a>
+        </li>
+        <li id="ref-9">
+          "What is Reproducibility in AI/ML Research?" <em>AI Magazine (Wiley)</em>, 2025.
+          <a href="https://onlinelibrary.wiley.com/doi/full/10.1002/aaai.70004">https://onlinelibrary.wiley.com/doi/full/10.1002/aaai.70004</a>
+        </li>
+        <li id="ref-10">
+          "How Much Can We Forget about Data Contamination?" <em>ICML 2025</em>.
+          <a href="https://icml.cc/virtual/2025/poster/45377">https://icml.cc/virtual/2025/poster/45377</a>
+        </li>
+        <li id="ref-11">
+          MYSTIC DEPOT DIU Solicitation (PROJ00625). Defense Innovation Unit, 2026.
+          <a href="https://www.diu.mil/work-with-us/submit-solution/PROJ00625">https://www.diu.mil/work-with-us/submit-solution/PROJ00625</a>
+        </li>
+        <li id="ref-12">
+          Rogue, M. "Pentagon, IC Want AI Evaluation Harness for Testing AI Systems." <em>DefenseScoop</em>, March 11, 2026.
+          <a href="https://defensescoop.com/2026/03/11/ai-system-testing-dod-intelligence-agencies/">https://defensescoop.com/2026/03/11/ai-system-testing-dod-intelligence-agencies/</a>
+        </li>
+        <li id="ref-13">
+          Federation of American Scientists. "Codifying and Expanding Continuous AI Benchmarking." FAS Policy Brief, 2025.
+          <a href="https://fas.org/publication/codifying-expanding-continuous-ai-benchmarking/">https://fas.org/publication/codifying-expanding-continuous-ai-benchmarking/</a>
+        </li>
+        <li id="ref-14">
+          Office of the Director of National Intelligence. "Intelligence Community Directive 203: Analytic Standards."
+          Revised 2015.
+          <a href="https://www.dni.gov/files/documents/ICD/ICD-203.pdf">https://www.dni.gov/files/documents/ICD/ICD-203.pdf</a>
+        </li>
+        <li id="ref-15">
+          National Institute of Standards and Technology. "AI Risk Management Framework (AI RMF 1.0)."
+          NIST AI 100-1, 2023.
+          <a href="https://nvlpubs.nist.gov/nistpubs/ai/nist.ai.100-1.pdf">https://nvlpubs.nist.gov/nistpubs/ai/nist.ai.100-1.pdf</a>
+        </li>
+        <li id="ref-16">
+          Congressional Research Service. "CDAO Realignment." CRS Report IN12615, 2025.
+          <a href="https://www.congress.gov/crs-product/IN12615">https://www.congress.gov/crs-product/IN12615</a>
+        </li>
+        <li id="ref-17">
+          Department of Defense Inspector General. "Evaluation of CDAO." DODIG-2025-039, 2025.
+          <a href="https://www.dodig.mil/reports.html/Article/3967388/">https://www.dodig.mil/reports.html/Article/3967388/</a>
+        </li>
+        <li id="ref-18">
+          Covington &amp; Burling LLP. "OMB Releases Requirements for Responsible AI Procurement by Federal Agencies."
+          October 2024.
+          <a href="https://www.cov.com/en/news-and-insights/insights/2024/10/omb-releases-requirements-for-responsible-ai-procurement-by-federal-agencies">https://www.cov.com/en/news-and-insights/insights/2024/10/omb-releases-requirements-for-responsible-ai-procurement-by-federal-agencies</a>
+        </li>
+        <li id="ref-19">
+          The White House. "White House Releases New Policies on Federal Agency AI Use and Procurement." April 2025.
+          <a href="https://www.whitehouse.gov/articles/2025/04/white-house-releases-new-policies-on-federal-agency-ai-use-and-procurement/">https://www.whitehouse.gov/articles/2025/04/white-house-releases-new-policies-on-federal-agency-ai-use-and-procurement/</a>
+        </li>
+        <li id="ref-20">
+          Williams, L. "Lawmakers Propose DIU-Managed Military Testing and Evaluation Cell." <em>C4ISRNet</em>,
+          May 13, 2024.
+          <a href="https://www.c4isrnet.com/battlefield-tech/2024/05/13/lawmakers-propose-diu-managed-military-testing-and-evaluation-cell/">https://www.c4isrnet.com/battlefield-tech/2024/05/13/lawmakers-propose-diu-managed-military-testing-and-evaluation-cell/</a>
+        </li>
+        <li id="ref-21">
+          Greenberg Traurig. "EU AI Act: Key Compliance Considerations Ahead of August 2025." July 2025.
+          <a href="https://www.gtlaw.com/en/insights/2025/7/eu-ai-act-key-compliance-considerations-ahead-of-august-2025">https://www.gtlaw.com/en/insights/2025/7/eu-ai-act-key-compliance-considerations-ahead-of-august-2025</a>
+        </li>
+        <li id="ref-22">
+          DLA Piper. "Latest Wave of Obligations Under the EU AI Act Take Effect." August 2025.
+          <a href="https://www.dlapiper.com/en-us/insights/publications/2025/08/latest-wave-of-obligations-under-the-eu-ai-act-take-effect">https://www.dlapiper.com/en-us/insights/publications/2025/08/latest-wave-of-obligations-under-the-eu-ai-act-take-effect</a>
+        </li>
+        <li id="ref-23">
+          Future of Privacy Forum. "Conformity Assessment Under the EU AI Act." Working Paper, April 2025.
+          <a href="https://fpf.org/wp-content/uploads/2025/04/OT-comformity-assessment-under-the-eu-ai-act-WP-1.pdf">https://fpf.org/wp-content/uploads/2025/04/OT-comformity-assessment-under-the-eu-ai-act-WP-1.pdf</a>
+        </li>
+        <li id="ref-24">
+          Nemko Digital. "EU AI Act Rules on GPAI: 2025 Update."
+          <a href="https://digital.nemko.com/insights/eu-ai-act-rules-on-gpai-2025-update">https://digital.nemko.com/insights/eu-ai-act-rules-on-gpai-2025-update</a>
+        </li>
+        <li id="ref-25">
+          Stanford Institute for Human-Centered Artificial Intelligence. <em>AI Index Report 2025</em>.
+          <a href="https://hai.stanford.edu/ai-index/2025-ai-index-report">https://hai.stanford.edu/ai-index/2025-ai-index-report</a>
+        </li>
+        <li id="ref-26">
+          Stanford Center for Research on Foundation Models. "HELM: Holistic Evaluation of Language Models."
+          Latest release: December 4, 2025.
+          <a href="https://crfm.stanford.edu/helm/capabilities/latest/">https://crfm.stanford.edu/helm/capabilities/latest/</a>
+        </li>
+        <li id="ref-27">
+          Menlo Ventures. "2025: The State of Generative AI in the Enterprise."
+          <a href="https://menlovc.com/perspective/2025-the-state-of-generative-ai-in-the-enterprise/">https://menlovc.com/perspective/2025-the-state-of-generative-ai-in-the-enterprise/</a>
+        </li>
+        <li id="ref-28">
+          Skywork AI. "OpenRouter Review 2025."
+          <a href="https://skywork.ai/blog/openrouter-review-2025/">https://skywork.ai/blog/openrouter-review-2025/</a>
+        </li>
+        <li id="ref-29">
+          LiteLLM. "Documentation."
+          <a href="https://docs.litellm.ai/">https://docs.litellm.ai/</a>
+        </li>
+        <li id="ref-30">
+          LM Arena (formerly LMSYS Chatbot Arena).
+          <a href="https://lmarena.ai/">https://lmarena.ai/</a>
+        </li>
+        <li id="ref-31">
+          HuggingFace. "Open LLM Leaderboard."
+          <a href="https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard">https://huggingface.co/spaces/open-llm-leaderboard/open_llm_leaderboard</a>
+        </li>
+        <li id="ref-32">
+          IBM. "HELM Enterprise Benchmark."
+          <a href="https://github.com/IBM/helm-enterprise-benchmark">https://github.com/IBM/helm-enterprise-benchmark</a>
+        </li>
+        <li id="ref-33">
+          Coldewey, D. "Meta Exec Denies the Company Artificially Boosted Llama 4's Benchmark Scores."
+          <em>TechCrunch</em>, April 7, 2025.
+          <a href="https://techcrunch.com/2025/04/07/meta-exec-denies-the-company-artificially-boosted-llama-4s-benchmark-scores/">https://techcrunch.com/2025/04/07/meta-exec-denies-the-company-artificially-boosted-llama-4s-benchmark-scores/</a>
+        </li>
+        <li id="ref-34">
+          Coldewey, D. "Meta's Benchmarks for Its New AI Models Are a Bit Misleading." <em>TechCrunch</em>,
+          April 6, 2025.
+          <a href="https://techcrunch.com/2025/04/06/metas-benchmarks-for-its-new-ai-models-are-a-bit-misleading/">https://techcrunch.com/2025/04/06/metas-benchmarks-for-its-new-ai-models-are-a-bit-misleading/</a>
+        </li>
+        <li id="ref-35">
+          Sharwood, S. "Meta's Llama 4 Benchmark 'Bait-n-Switch' Sparks Outrage." <em>The Register</em>,
+          April 8, 2025.
+          <a href="https://www.theregister.com/2025/04/08/meta_llama4_cheating/">https://www.theregister.com/2025/04/08/meta_llama4_cheating/</a>
+        </li>
+        <li id="ref-36">
+          Claburn, T. "Measuring AI Models Hampered by Bad Science." <em>The Register</em>, November 7, 2025.
+          <a href="https://www.theregister.com/2025/11/07/measuring_ai_models_hampered_by/">https://www.theregister.com/2025/11/07/measuring_ai_models_hampered_by/</a>
+        </li>
+        <li id="ref-37">
+          Collinear AI. "Gaming the System: Goodhart's Law Exemplified in AI Leaderboard Controversy."
+          <a href="https://blog.collinear.ai/p/gaming-the-system-goodharts-law-exemplified-in-ai-leaderboard-controversy">https://blog.collinear.ai/p/gaming-the-system-goodharts-law-exemplified-in-ai-leaderboard-controversy</a>
+        </li>
+        <li id="ref-38">
+          Heikkila, M. "How to Build a Better AI Benchmark." <em>MIT Technology Review</em>, May 8, 2025.
+          <a href="https://www.technologyreview.com/2025/05/08/1116192/how-to-build-a-better-ai-benchmark/">https://www.technologyreview.com/2025/05/08/1116192/how-to-build-a-better-ai-benchmark/</a>
+        </li>
+        <li id="ref-39">
+          Kellton. "Why Vendor Lock-In Is Riskier in the GenAI Era and How to Avoid It." 2025.
+          <a href="https://www.kellton.com/kellton-tech-blog/why-vendor-lock-in-is-riskier-in-genai-era-and-how-to-avoid-it">https://www.kellton.com/kellton-tech-blog/why-vendor-lock-in-is-riskier-in-genai-era-and-how-to-avoid-it</a>
+        </li>
+        <li id="ref-40">
+          Goedecke, S. "Why Arena Leaderboards Are Dominated by Slop."
+          <a href="https://www.seangoedecke.com/lmsys-slop/">https://www.seangoedecke.com/lmsys-slop/</a>
+        </li>
+      </ol>
+    </div>
+
+  </article>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <span>&copy; 2025&ndash;2026 Presba, LLC</span>
+    <div class="footer-links">
+      <a href="/#work">What We Do</a>
+      <a href="/#about">About</a>
+      <a href="/#contact">Contact</a>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu
+    const btn = document.getElementById('menu-btn');
+    const mm = document.getElementById('mobile-menu');
+    btn.addEventListener('click', () => mm.classList.toggle('open'));
+    function closeMobile() { mm.classList.remove('open'); }
+  </script>
+</body>
+</html>
