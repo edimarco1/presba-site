@@ -17,16 +17,17 @@
       --fg: #1a1a1a;
       --fg-muted: #6b6b6b;
       --bg: #f5f2ee;
+      --bg-warm: #eee9e2;
       --bg-dark: #0d3b3e;
-      --accent: #10b981;
-      --accent-hover: #059669;
+      --bg-dark-deep: #092a2c;
+      --accent: #0d3b3e;
+      --accent-line: #c4b5a3;
       --border: #ddd5ca;
       --serif: 'Instrument Serif', Georgia, serif;
       --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     html { scroll-behavior: smooth; }
 
     body {
@@ -35,6 +36,25 @@
       color: var(--fg);
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+    }
+
+    /* ---- DECORATIVE LINES ---- */
+    .deco-lines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .deco-lines svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
     }
 
     /* ---- NAV ---- */
@@ -51,7 +71,7 @@
       transition: background 0.3s, backdrop-filter 0.3s;
     }
     .nav.scrolled {
-      background: rgba(245, 242, 238, 0.85);
+      background: rgba(245, 242, 238, 0.88);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
     }
@@ -119,67 +139,138 @@
     /* ---- HERO ---- */
     .hero {
       min-height: 100vh;
-      display: flex;
-      align-items: flex-end;
-      padding: 0 2rem 6rem;
-      position: relative;
-    }
-    .hero-content {
-      max-width: 1200px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      max-width: 1400px;
       margin: 0 auto;
-      width: 100%;
+      padding: 8rem 2rem 4rem;
+      gap: 3rem;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-content { position: relative; }
+    .hero-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fg-muted);
+      margin-bottom: 2rem;
     }
     .hero h1 {
       font-family: var(--serif);
-      font-size: clamp(3rem, 8vw, 7rem);
-      line-height: 1.05;
+      font-size: clamp(2.8rem, 5.5vw, 5.5rem);
+      line-height: 1.08;
       letter-spacing: -0.03em;
       color: var(--fg);
-      margin-bottom: 2rem;
+      margin-bottom: 1.75rem;
     }
     .hero h1 em {
       font-style: italic;
       color: var(--bg-dark);
     }
-    .hero-sub {
-      max-width: 480px;
-      font-size: 1.05rem;
-      line-height: 1.7;
+    .hero-desc {
+      font-size: 1rem;
+      line-height: 1.75;
       color: var(--fg-muted);
-      margin-left: auto;
+      max-width: 440px;
+      margin-bottom: 2.5rem;
     }
-    .hero-line {
-      width: 60px;
-      height: 2px;
-      background: var(--accent);
-      margin-bottom: 1.25rem;
-      margin-left: auto;
+    .hero-desc em {
+      font-style: italic;
+      color: var(--fg);
+      font-weight: 500;
+    }
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .btn-primary {
+      font-family: var(--sans);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--bg);
+      background: var(--bg-dark);
+      border: 2px solid var(--bg-dark);
+      padding: 0.9rem 2.25rem;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.25s;
+      display: inline-block;
+    }
+    .btn-primary:hover {
+      background: var(--bg-dark-deep);
+      border-color: var(--bg-dark-deep);
+    }
+    .btn-outline {
+      font-family: var(--sans);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--fg);
+      background: transparent;
+      border: 2px solid var(--border);
+      padding: 0.9rem 2.25rem;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.25s;
+      display: inline-block;
+    }
+    .btn-outline:hover {
+      border-color: var(--fg);
+    }
+    .hero-image {
+      position: relative;
+      height: 100%;
+      min-height: 500px;
+    }
+    .hero-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .hero-image-accent {
+      position: absolute;
+      top: -20px;
+      right: -20px;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-warm);
+      z-index: -1;
     }
 
     /* ---- MARQUEE DIVIDER ---- */
     .marquee-wrap {
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
-      padding: 1rem 0;
+      padding: 1.15rem 0;
       overflow: hidden;
       white-space: nowrap;
+      position: relative;
+      z-index: 1;
     }
     .marquee-track {
       display: inline-flex;
-      animation: marquee 30s linear infinite;
+      animation: marquee 35s linear infinite;
     }
     .marquee-track span {
-      font-family: var(--serif);
-      font-size: 0.9rem;
+      font-family: var(--sans);
+      font-size: 0.8rem;
+      font-weight: 500;
       color: var(--fg-muted);
-      letter-spacing: 0.08em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      padding: 0 2.5rem;
+      padding: 0 1.5rem;
     }
     .marquee-track span::after {
-      content: '\2022';
-      margin-left: 2.5rem;
-      color: var(--accent);
+      content: '+';
+      margin-left: 1.5rem;
+      color: var(--accent-line);
+      font-weight: 300;
     }
     @keyframes marquee {
       0% { transform: translateX(0); }
@@ -191,64 +282,165 @@
       max-width: 1200px;
       margin: 0 auto;
       padding: 7rem 2rem;
+      position: relative;
+      z-index: 1;
     }
     .section-label {
       font-size: 0.7rem;
       font-weight: 600;
       letter-spacing: 0.15em;
       text-transform: uppercase;
-      color: var(--accent);
+      color: var(--fg-muted);
       margin-bottom: 2rem;
     }
-
-    /* ---- WHAT WE DO (EDITORIAL LIST) ---- */
-    .capabilities {
-      display: flex;
-      flex-direction: column;
-    }
-    .capability {
+    .section-header {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 3rem;
       align-items: start;
-      padding: 3rem 0;
-      border-bottom: 1px solid var(--border);
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.5s ease, transform 0.5s ease;
+      margin-bottom: 3.5rem;
     }
-    .capability.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .capability:first-child { border-top: 1px solid var(--border); }
-    .capability-num {
+    .section-header h2 {
       font-family: var(--serif);
-      font-size: 0.85rem;
-      color: var(--fg-muted);
-      margin-bottom: 0.75rem;
-    }
-    .capability h3 {
-      font-family: var(--serif);
-      font-size: 1.75rem;
+      font-size: clamp(2rem, 4vw, 3.25rem);
+      line-height: 1.15;
       letter-spacing: -0.02em;
-      line-height: 1.2;
-      color: var(--fg);
     }
-    .capability p {
+    .section-header p {
       font-size: 0.95rem;
-      line-height: 1.75;
+      line-height: 1.8;
       color: var(--fg-muted);
       padding-top: 0.5rem;
     }
 
-    /* ---- IMAGE BREAK ---- */
+    /* ---- SERVICES CARDS ---- */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+    .service-card {
+      position: relative;
+      overflow: hidden;
+      aspect-ratio: 3/4;
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    .service-card.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .service-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+    .service-card:hover img {
+      transform: scale(1.04);
+    }
+    .service-card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(13,59,62,0.85) 0%, rgba(13,59,62,0.2) 50%, transparent 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 1.5rem;
+    }
+    .service-card-num {
+      font-family: var(--serif);
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 0.4rem;
+    }
+    .service-card h3 {
+      font-family: var(--serif);
+      font-size: 1.35rem;
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: 0.5rem;
+    }
+    .service-card p {
+      font-size: 0.8rem;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.7);
+    }
+
+    /* ---- ABOUT (ASYMMETRIC MOSAIC) ---- */
+    .about-section {
+      position: relative;
+      z-index: 1;
+    }
+    .about-mosaic {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+    .about-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+    .about-left h2 {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 4vw, 3.25rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+    .about-left-text {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .about-left-text p {
+      font-size: 0.95rem;
+      line-height: 1.8;
+      color: var(--fg-muted);
+    }
+    .about-left img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+    }
+    .about-right {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      padding-top: 4rem;
+    }
+    .about-right img {
+      width: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .about-right img:first-child {
+      aspect-ratio: 3/4;
+    }
+    .about-callout {
+      padding: 2rem;
+      background: var(--bg-warm);
+    }
+    .about-callout p {
+      font-family: var(--serif);
+      font-size: 1.35rem;
+      font-style: italic;
+      line-height: 1.5;
+      color: var(--fg);
+    }
+
+    /* ---- IMAGE BREAK (FULL BLEED) ---- */
     .image-break {
       width: 100%;
-      height: 50vh;
-      min-height: 360px;
+      height: 60vh;
+      min-height: 400px;
       overflow: hidden;
       position: relative;
+      z-index: 1;
     }
     .image-break img {
       width: 100%;
@@ -256,64 +448,124 @@
       object-fit: cover;
       display: block;
     }
-    .image-break-overlay {
+    .image-break-text {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to bottom, var(--bg) 0%, transparent 15%, transparent 85%, var(--bg) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(13, 59, 62, 0.35);
+    }
+    .image-break-text h2 {
+      font-family: var(--serif);
+      font-size: clamp(2.5rem, 5vw, 5rem);
+      color: #fff;
+      text-align: center;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      max-width: 700px;
+      padding: 0 2rem;
     }
 
-    /* ---- ABOUT (DARK) ---- */
-    .about {
-      background: var(--bg-dark);
-      color: #c8dfe0;
+    /* ---- STATS ROW ---- */
+    .stats {
       position: relative;
-      overflow: hidden;
+      z-index: 1;
     }
-    .about::before {
-      content: '';
-      position: absolute;
-      top: -200px;
-      right: -200px;
-      width: 600px;
-      height: 600px;
-      background: radial-gradient(ellipse at center, rgba(16,185,129,0.06), transparent 70%);
-    }
-    .about .section { position: relative; }
-    .about-grid {
+    .stats-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4rem;
-      align-items: start;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 5rem 2rem;
     }
-    .about h2 {
+    .stat {
+      text-align: center;
+    }
+    .stat-num {
       font-family: var(--serif);
-      font-size: clamp(2rem, 4vw, 3.5rem);
-      color: #fff;
-      line-height: 1.15;
-      letter-spacing: -0.02em;
+      font-size: clamp(2.5rem, 4vw, 3.5rem);
+      color: var(--fg);
+      line-height: 1;
+      margin-bottom: 0.5rem;
     }
-    .about-text { display: flex; flex-direction: column; gap: 1.25rem; }
-    .about-text p {
+    .stat-line {
+      width: 30px;
+      height: 2px;
+      background: var(--accent-line);
+      margin: 0.75rem auto;
+    }
+    .stat-label {
+      font-size: 0.8rem;
+      color: var(--fg-muted);
+      letter-spacing: 0.02em;
+    }
+
+    /* ---- CTA BANNER ---- */
+    .cta-banner {
+      background: var(--bg-dark);
+      position: relative;
+      z-index: 1;
+    }
+    .cta-banner-inner {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 5rem 2rem;
+      text-align: center;
+    }
+    .cta-banner .section-label {
+      color: rgba(255,255,255,0.4);
+    }
+    .cta-banner h2 {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+    .cta-banner p {
       font-size: 0.95rem;
-      line-height: 1.8;
+      line-height: 1.7;
       color: #9ab8ba;
+      margin-bottom: 2.5rem;
+    }
+    .cta-banner .btn-primary {
+      background: #fff;
+      color: var(--bg-dark);
+      border-color: #fff;
+    }
+    .cta-banner .btn-primary:hover {
+      background: rgba(255,255,255,0.9);
+      border-color: rgba(255,255,255,0.9);
+    }
+    .cta-banner .btn-outline {
+      color: #fff;
+      border-color: rgba(255,255,255,0.3);
+    }
+    .cta-banner .btn-outline:hover {
+      border-color: #fff;
     }
 
     /* ---- CONTACT ---- */
+    .contact-section {
+      position: relative;
+      z-index: 1;
+    }
     .contact-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 4rem;
       align-items: start;
     }
-    .contact h2 {
+    .contact-intro h2 {
       font-family: var(--serif);
-      font-size: clamp(2rem, 4vw, 3.5rem);
+      font-size: clamp(2rem, 4vw, 3.25rem);
       line-height: 1.15;
       letter-spacing: -0.02em;
+      margin-bottom: 1rem;
     }
-    .contact h2 + p {
-      margin-top: 1rem;
+    .contact-intro p {
       color: var(--fg-muted);
       font-size: 0.95rem;
       line-height: 1.7;
@@ -339,7 +591,6 @@
       font-size: 0.95rem;
       padding: 0.85rem 1rem;
       border: 1px solid var(--border);
-      border-radius: 8px;
       background: #fff;
       color: var(--fg);
       outline: none;
@@ -353,63 +604,133 @@
     .contact-form textarea {
       min-height: 120px;
     }
-    .contact-form button {
-      font-family: var(--sans);
-      font-size: 0.85rem;
-      font-weight: 600;
-      letter-spacing: 0.03em;
-      color: var(--bg);
-      background: var(--bg-dark);
-      border: 2px solid var(--bg-dark);
-      border-radius: 100px;
-      padding: 0.9rem 2.5rem;
-      cursor: pointer;
-      transition: all 0.25s;
-      align-self: flex-start;
-    }
-    .contact-form button:hover {
-      background: transparent;
-      color: var(--bg-dark);
-    }
 
     /* ---- FOOTER ---- */
     .footer {
-      border-top: 1px solid var(--border);
-      padding: 2rem;
+      background: var(--bg-dark-deep);
+      color: #9ab8ba;
+      position: relative;
+      z-index: 1;
+    }
+    .footer-top {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 2rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      max-width: 1200px;
-      margin: 0 auto;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
     }
-    .footer span {
-      font-size: 0.75rem;
-      color: var(--fg-muted);
+    .footer-logo {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      color: #fff;
+      text-decoration: none;
     }
-    .footer-links { display: flex; gap: 1.5rem; }
-    .footer-links a {
-      font-size: 0.75rem;
-      color: var(--fg-muted);
+    .footer-nav {
+      display: flex;
+      gap: 2rem;
+    }
+    .footer-nav a {
+      font-size: 0.85rem;
+      color: #9ab8ba;
       text-decoration: none;
       transition: color 0.2s;
     }
-    .footer-links a:hover { color: var(--fg); }
+    .footer-nav a:hover { color: #fff; }
+    .footer-bottom {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+    }
+    .footer-info h4 {
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      color: #fff;
+      margin-bottom: 1rem;
+    }
+    .footer-info p {
+      font-size: 0.8rem;
+      line-height: 1.8;
+      color: #6d9a9d;
+    }
+    .footer-social {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .footer-social a {
+      width: 36px;
+      height: 36px;
+      border: 1px solid rgba(255,255,255,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9ab8ba;
+      text-decoration: none;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+    .footer-social a:hover {
+      border-color: #fff;
+      color: #fff;
+    }
+    .footer-copy {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem 2rem;
+      font-size: 0.75rem;
+      color: #4d7e81;
+    }
 
     /* ---- RESPONSIVE ---- */
+    @media (max-width: 1024px) {
+      .services-grid { grid-template-columns: repeat(2, 1fr); }
+    }
     @media (max-width: 768px) {
       .nav-links { display: none; }
       .nav-mobile-btn { display: block; }
-      .hero { padding-bottom: 4rem; }
-      .hero-sub { margin-left: 0; }
-      .hero-line { margin-left: 0; }
-      .capability { grid-template-columns: 1fr; gap: 1rem; }
-      .about-grid { grid-template-columns: 1fr; gap: 2rem; }
+      .hero {
+        grid-template-columns: 1fr;
+        padding-top: 7rem;
+        padding-bottom: 3rem;
+        min-height: auto;
+      }
+      .hero-image { min-height: 350px; }
+      .hero-image-accent { display: none; }
+      .section-header {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+      .services-grid { grid-template-columns: 1fr; }
+      .service-card { aspect-ratio: 16/9; }
+      .about-mosaic { grid-template-columns: 1fr; }
+      .about-right { padding-top: 0; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
       .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
-      .footer { flex-direction: column; gap: 1rem; text-align: center; }
+      .footer-top { flex-direction: column; gap: 1.5rem; text-align: center; }
+      .footer-nav { flex-wrap: wrap; justify-content: center; }
+      .footer-bottom { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
+
+  <!-- DECORATIVE FLOWING LINES -->
+  <div class="deco-lines" aria-hidden="true">
+    <svg viewBox="0 0 1920 6000" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M-100 200 C300 350, 500 100, 800 300 S1200 500, 1400 250 S1800 400, 2020 200" stroke="rgba(196,181,163,0.25)" stroke-width="1.5" fill="none"/>
+      <path d="M-50 800 C200 950, 600 700, 900 900 S1300 1100, 1500 850 S1900 1000, 2020 800" stroke="rgba(196,181,163,0.2)" stroke-width="1" fill="none"/>
+      <path d="M2020 1400 C1700 1550, 1400 1300, 1100 1500 S700 1700, 400 1450 S100 1600, -100 1400" stroke="rgba(196,181,163,0.22)" stroke-width="1.5" fill="none"/>
+      <path d="M-100 2200 C300 2350, 600 2100, 900 2300 S1300 2500, 1600 2250 S1900 2400, 2020 2200" stroke="rgba(196,181,163,0.18)" stroke-width="1" fill="none"/>
+      <path d="M2020 3000 C1700 3200, 1300 2900, 1000 3100 S600 3300, 300 3050 S-50 3200, -100 3000" stroke="rgba(196,181,163,0.22)" stroke-width="1.5" fill="none"/>
+      <path d="M-100 3800 C400 3950, 700 3700, 1000 3900 S1400 4100, 1700 3850 S1950 4000, 2020 3800" stroke="rgba(196,181,163,0.15)" stroke-width="1" fill="none"/>
+      <path d="M2020 4600 C1600 4800, 1200 4500, 900 4700 S500 4900, 200 4650 S-50 4800, -100 4600" stroke="rgba(196,181,163,0.2)" stroke-width="1.5" fill="none"/>
+    </svg>
+  </div>
 
   <!-- NAV -->
   <nav class="nav" id="navbar">
@@ -436,13 +757,25 @@
   <!-- HERO -->
   <section class="hero">
     <div class="hero-content">
+      <div class="hero-label">AI Software &amp; Applied Research</div>
       <h1><em>AI&nbsp;software</em><br>& applied research.</h1>
-      <div class="hero-sub">
-        <div class="hero-line"></div>
+      <p class="hero-desc">
         Presba is a software company focused on artificial intelligence.
         We develop interfaces, evaluation frameworks, and integration
-        tools for enterprise and government partners.
+        tools for <em>enterprise and government</em> partners.
+      </p>
+      <div class="hero-buttons">
+        <a href="#contact" class="btn-primary">Get in Touch</a>
+        <a href="#work" class="btn-outline">What We Do</a>
       </div>
+    </div>
+    <div class="hero-image">
+      <img
+        src="https://images.unsplash.com/photo-1551434678-e076c223a692?w=800&q=80&auto=format"
+        alt="Team collaborating on technology in a modern workspace"
+        loading="eager"
+      >
+      <div class="hero-image-accent"></div>
     </div>
   </section>
 
@@ -467,105 +800,176 @@
   <!-- WHAT WE DO -->
   <section id="work">
     <div class="section">
-      <div class="section-label">What We Do</div>
-      <div class="capabilities">
+      <div class="section-header">
+        <div>
+          <div class="section-label">What We Do</div>
+          <h2>What We<br>Deliver.</h2>
+        </div>
+        <p>
+          We build AI tools that organizations trust with
+          high-stakes decisions. From multi-model interfaces to behavioral
+          fingerprinting, our work sits at the intersection of research
+          and production deployment.
+        </p>
+      </div>
 
-        <div class="capability">
-          <div>
-            <div class="capability-num">01</div>
+      <div class="services-grid">
+        <div class="service-card">
+          <img
+            src="https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?w=600&q=80&auto=format"
+            alt="AI interface development"
+            loading="lazy"
+          >
+          <div class="service-card-overlay">
+            <div class="service-card-num">01.</div>
             <h3>AI Interfaces</h3>
+            <p>Multi-model chat components with real-time streaming, generation branching, and usage analytics.</p>
           </div>
-          <p>
-            Multi-model chat components with real-time streaming,
-            generation branching, and usage analytics. Built as embeddable
-            libraries for partner platforms.
-          </p>
         </div>
 
-        <div class="capability">
-          <div>
-            <div class="capability-num">02</div>
+        <div class="service-card">
+          <img
+            src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80&auto=format"
+            alt="Model evaluation and data analysis"
+            loading="lazy"
+          >
+          <div class="service-card-overlay">
+            <div class="service-card-num">02.</div>
             <h3>Model Evaluation &amp; Fingerprinting</h3>
+            <p>Behavioral profiling across 16 dimensions for trust-critical deployments.</p>
           </div>
-          <p>
-            Evaluation harnesses with behavioral profiling across
-            16 dimensions&mdash;sycophancy, hallucination tendency,
-            jailbreak resilience, and more. Built for trust-critical
-            deployments.
-          </p>
         </div>
 
-        <div class="capability">
-          <div>
-            <div class="capability-num">03</div>
+        <div class="service-card">
+          <img
+            src="https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=600&q=80&auto=format"
+            alt="Applied AI research"
+            loading="lazy"
+          >
+          <div class="service-card-overlay">
+            <div class="service-card-num">03.</div>
             <h3>Applied AI Research</h3>
+            <p>Adversarial testing, prompt injection resilience, and degradation analysis.</p>
           </div>
-          <p>
-            Adversarial testing, prompt injection resilience,
-            degradation analysis, and integration patterns for
-            organizations deploying AI in high-stakes environments.
-          </p>
         </div>
 
-        <div class="capability">
-          <div>
-            <div class="capability-num">04</div>
+        <div class="service-card">
+          <img
+            src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=600&q=80&auto=format"
+            alt="Enterprise collaboration"
+            loading="lazy"
+          >
+          <div class="service-card-overlay">
+            <div class="service-card-num">04.</div>
             <h3>Enterprise &amp; Government Integration</h3>
+            <p>Deploying AI capabilities into partner platforms and existing workflows.</p>
           </div>
-          <p>
-            Deploying AI capabilities into partner platforms
-            and existing workflows for commercial and government
-            organizations.
-          </p>
         </div>
-
       </div>
     </div>
   </section>
 
-  <!-- IMAGE BREAK -->
+  <!-- ABOUT (ASYMMETRIC MOSAIC) -->
+  <section class="about-section" id="about">
+    <div class="section">
+      <div class="section-label">About</div>
+      <div class="about-mosaic">
+        <div class="about-left">
+          <h2>AI solutions that<br>deliver measurable value.</h2>
+          <div class="about-left-text">
+            <p>
+              Presba, LLC is a software company focused on artificial
+              intelligence. We specialize in multi-model AI interfaces,
+              model evaluation and behavioral analysis, and the
+              integration work that connects AI capabilities to
+              real-world workflows.
+            </p>
+            <p>
+              Our technology powers production systems in the federal
+              compliance and risk management space. We work with
+              enterprise and government partners to solve specific
+              problems with purpose-built AI tooling.
+            </p>
+          </div>
+          <img
+            src="https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=700&q=80&auto=format"
+            alt="Data visualization dashboard on screen"
+            loading="lazy"
+          >
+        </div>
+        <div class="about-right">
+          <img
+            src="https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=80&auto=format"
+            alt="Server infrastructure and technology"
+            loading="lazy"
+          >
+          <div class="about-callout">
+            <p>We believe the best AI tools are the ones built with a clear understanding of how they'll actually be used.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- IMAGE BREAK (FULL BLEED WITH TEXT) -->
   <div class="image-break">
     <img
       src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=1400&q=80&auto=format"
       alt="Abstract AI neural network visualization"
       loading="lazy"
     >
-    <div class="image-break-overlay"></div>
+    <div class="image-break-text">
+      <h2>Building the Future of Trusted AI</h2>
+    </div>
   </div>
 
-  <!-- ABOUT -->
-  <section class="about" id="about">
-    <div class="section">
-      <div class="section-label" style="color: var(--accent);">About</div>
-      <div class="about-grid">
-        <h2>AI solutions that<br>deliver measurable<br>value.</h2>
-        <div class="about-text">
-          <p>
-            Presba, LLC is a software company focused on artificial
-            intelligence. We specialize in multi-model AI interfaces,
-            model evaluation and behavioral analysis, and the
-            integration work that connects AI capabilities to
-            real-world workflows.
-          </p>
-          <p>
-            Our technology powers production systems in the federal
-            compliance and risk management space. We work with
-            enterprise and government partners to solve specific
-            problems with purpose-built AI tooling.
-          </p>
-        </div>
+  <!-- STATS ROW -->
+  <div class="stats">
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-num">6</div>
+        <div class="stat-line"></div>
+        <div class="stat-label">Published Papers</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">16+</div>
+        <div class="stat-line"></div>
+        <div class="stat-label">Evaluation Dimensions</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">B2B</div>
+        <div class="stat-line"></div>
+        <div class="stat-label">Enterprise &amp; Government</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">24/7</div>
+        <div class="stat-line"></div>
+        <div class="stat-label">Production Systems</div>
       </div>
     </div>
-  </section>
+  </div>
+
+  <!-- CTA BANNER -->
+  <div class="cta-banner">
+    <div class="cta-banner-inner">
+      <div class="section-label">Work With Us</div>
+      <h2>Ready to Deploy AI<br>You Can Trust?</h2>
+      <p>Whether you need model evaluation, a custom AI interface, or integration support, we'd love to hear about your project.</p>
+      <div class="hero-buttons" style="justify-content: center;">
+        <a href="#contact" class="btn-primary">Get in Touch</a>
+        <a href="/research/" class="btn-outline">Read Our Research</a>
+      </div>
+    </div>
+  </div>
 
   <!-- CONTACT -->
-  <section id="contact">
-    <div class="section contact">
+  <section class="contact-section" id="contact">
+    <div class="section">
       <div class="section-label">Contact</div>
       <div class="contact-grid">
-        <div>
-          <h2>Get in touch.</h2>
-          <p>Questions, partnership inquiries, or just want to say hello.</p>
+        <div class="contact-intro">
+          <h2>Let's talk.</h2>
+          <p>Questions, partnership inquiries, or just want to say hello. We'd love to hear from you.</p>
         </div>
         <form class="contact-form" action="https://formsubmit.co/presba.llc@gmail.com" method="POST">
           <input type="text" name="_honey" style="display:none">
@@ -584,25 +988,42 @@
             Message
             <textarea name="message" required></textarea>
           </label>
-          <button type="submit">Send Message</button>
+          <button type="submit" class="btn-primary">Send Message</button>
         </form>
       </div>
     </div>
   </section>
 
-  <!-- FOOTER -->
+  <!-- FOOTER (DARK, TWO-TIER) -->
   <footer class="footer">
-    <span>&copy; 2025&ndash;2026 Presba, LLC</span>
-    <div class="footer-links">
-      <a href="#work">What We Do</a>
-      <a href="/research/">Research</a>
-      <a href="#about">About</a>
-      <a href="#contact">Contact</a>
+    <div class="footer-top">
+      <a href="#" class="footer-logo">Presba</a>
+      <nav class="footer-nav">
+        <a href="#work">What We Do</a>
+        <a href="/research/">Research</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-info">
+        <h4>Get in Touch</h4>
+        <p>
+          <strong style="color:#9ab8ba;">EMAIL:</strong> presba.llc@gmail.com
+        </p>
+      </div>
+      <div class="footer-info">
+        <h4>About Presba</h4>
+        <p>AI software and research for enterprise and government partners. Building tools that organizations trust with high-stakes decisions.</p>
+      </div>
+    </div>
+    <div class="footer-copy">
+      &copy; 2025&ndash;2026 Presba, LLC. All rights reserved.
     </div>
   </footer>
 
   <script>
-    // Nav scroll
+    // Nav scroll effect
     const nav = document.getElementById('navbar');
     window.addEventListener('scroll', () => {
       nav.classList.toggle('scrolled', window.scrollY > 60);
@@ -614,11 +1035,15 @@
     btn.addEventListener('click', () => mm.classList.toggle('open'));
     function closeMobile() { mm.classList.remove('open'); }
 
-    // Scroll reveal
+    // Scroll reveal for service cards
     const obs = new IntersectionObserver((entries) => {
-      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          setTimeout(() => e.target.classList.add('visible'), i * 100);
+        }
+      });
     }, { threshold: 0.15 });
-    document.querySelectorAll('.capability').forEach(el => obs.observe(el));
+    document.querySelectorAll('.service-card').forEach(el => obs.observe(el));
   </script>
 </body>
 </html>
