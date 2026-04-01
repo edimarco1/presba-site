@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Persuasion-Accuracy Tradeoff: What the Largest AI Persuasion Study Means for Model Evaluation | Presba Research</title>
+  <meta name="description" content="A research brief analyzing Hackenburg et al.'s landmark 77,000-participant study on AI persuasion, examining its implications for behavioral evaluation, sycophancy, and vendor-agnostic model assessment.">
+  <meta name="author" content="Presba, LLC">
+  <meta property="og:title" content="The Persuasion-Accuracy Tradeoff | Presba Research">
+  <meta property="og:description" content="What the largest AI persuasion study means for model evaluation. A research brief by Presba LLC.">
+  <meta property="og:type" content="article">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.88em' font-size='80' font-family='serif' fill='%230d3b3e'>P</text></svg>">
+  <style>
+    :root {
+      --fg: #1a1a1a;
+      --fg-muted: #6b6b6b;
+      --bg: #f5f2ee;
+      --bg-dark: #0d3b3e;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --border: #ddd5ca;
+      --serif: 'Instrument Serif', Georgia, serif;
+      --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--fg);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ---- NAV ---- */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(245, 242, 238, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      color: var(--fg);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .nav-links { display: flex; gap: 2rem; align-items: center; }
+    .nav-links a {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--fg-muted);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--fg); }
+    .nav-mobile-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 28px;
+      height: 20px;
+      position: relative;
+    }
+    .nav-mobile-btn span {
+      display: block;
+      width: 100%;
+      height: 2px;
+      background: var(--fg);
+      position: absolute;
+      left: 0;
+      transition: all 0.3s;
+    }
+    .nav-mobile-btn span:nth-child(1) { top: 0; }
+    .nav-mobile-btn span:nth-child(2) { top: 9px; }
+    .nav-mobile-btn span:nth-child(3) { top: 18px; }
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg);
+      z-index: 49;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 2rem;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      font-family: var(--serif);
+      font-size: 2rem;
+      color: var(--fg);
+      text-decoration: none;
+    }
+
+    /* ---- ARTICLE ---- */
+    .article-header {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 8rem 2rem 3rem;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--accent);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 2.5rem;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--accent-hover); }
+    .back-link svg {
+      width: 14px;
+      height: 14px;
+    }
+    .article-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+    }
+    .article-header h1 {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 5vw, 3rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      margin-bottom: 1.5rem;
+    }
+    .article-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--fg-muted);
+      padding-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .article-meta span {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    /* ---- ARTICLE BODY ---- */
+    .article-body {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 2rem 5rem;
+    }
+    .article-body .section-title {
+      font-family: var(--serif);
+      font-size: 1.75rem;
+      letter-spacing: -0.02em;
+      color: var(--fg);
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+      line-height: 1.25;
+    }
+    .article-body .subsection-title {
+      font-family: var(--sans);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--fg);
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      line-height: 1.35;
+    }
+    .article-body p {
+      font-size: 0.95rem;
+      line-height: 1.85;
+      color: var(--fg);
+      margin-bottom: 1.15rem;
+    }
+    .article-body p.muted {
+      color: var(--fg-muted);
+    }
+
+    /* Abstract box */
+    .abstract-box {
+      background: #fff;
+      border-left: 3px solid var(--accent);
+      padding: 1.75rem 2rem;
+      margin: 2.5rem 0;
+      border-radius: 0 8px 8px 0;
+    }
+    .abstract-box .abstract-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+    .abstract-box p {
+      font-size: 0.92rem;
+      line-height: 1.85;
+      color: var(--fg);
+      margin-bottom: 0.75rem;
+    }
+    .abstract-box p:last-child { margin-bottom: 0; }
+
+    /* Tables */
+    .article-table-wrap {
+      overflow-x: auto;
+      margin: 1.5rem 0 1.75rem;
+    }
+    .article-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .article-table th {
+      text-align: left;
+      font-weight: 600;
+      color: var(--fg);
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    .article-table td {
+      padding: 0.65rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--fg);
+      line-height: 1.5;
+    }
+    .article-table tr:last-child td { border-bottom: none; }
+
+    /* Blockquote / callout */
+    .article-callout {
+      background: rgba(13, 59, 62, 0.04);
+      border-left: 3px solid var(--bg-dark);
+      padding: 1.25rem 1.5rem;
+      margin: 1.5rem 0;
+      border-radius: 0 6px 6px 0;
+    }
+    .article-callout p {
+      font-size: 0.9rem;
+      font-style: italic;
+      color: var(--fg-muted);
+      margin-bottom: 0;
+    }
+
+    /* References */
+    .references-list {
+      list-style: none;
+      counter-reset: ref-counter;
+      padding: 0;
+      margin-top: 1rem;
+    }
+    .references-list li {
+      counter-increment: ref-counter;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--fg);
+      margin-bottom: 0.85rem;
+      padding-left: 2.5rem;
+      position: relative;
+    }
+    .references-list li::before {
+      content: "[" counter(ref-counter) "]";
+      position: absolute;
+      left: 0;
+      font-weight: 600;
+      color: var(--fg-muted);
+      font-size: 0.8rem;
+    }
+    .references-list li a {
+      color: var(--accent);
+      text-decoration: none;
+      word-break: break-all;
+    }
+    .references-list li a:hover { text-decoration: underline; }
+
+    /* Inline citation styling */
+    .cite {
+      color: var(--fg-muted);
+      font-size: 0.88em;
+    }
+
+    /* Footer */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .footer span {
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+    }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a {
+      font-size: 0.75rem;
+      color: var(--fg-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--fg); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-mobile-btn { display: block; }
+      .article-header { padding-top: 6rem; }
+      .article-meta { flex-direction: column; gap: 0.5rem; }
+      .footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="/" class="nav-logo">Presba</a>
+    <div class="nav-links">
+      <a href="/#work">What We Do</a>
+      <a href="/research/">Research</a>
+      <a href="/#about">About</a>
+      <a href="/#contact">Contact</a>
+    </div>
+    <button class="nav-mobile-btn" id="menu-btn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- MOBILE MENU -->
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="/" onclick="closeMobile()">Home</a>
+    <a href="/#work" onclick="closeMobile()">What We Do</a>
+    <a href="/research/" onclick="closeMobile()">Research</a>
+    <a href="/#about" onclick="closeMobile()">About</a>
+    <a href="/#contact" onclick="closeMobile()">Contact</a>
+  </div>
+
+  <!-- ARTICLE HEADER -->
+  <header class="article-header">
+    <a href="/research/" class="back-link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+      All Research
+    </a>
+    <div class="article-label">Research Brief</div>
+    <h1>The Persuasion-Accuracy Tradeoff: What the Largest AI Persuasion Study Means for Model Evaluation</h1>
+    <div class="article-meta">
+      <span>Presba, LLC</span>
+      <span>2026</span>
+    </div>
+  </header>
+
+  <!-- ARTICLE BODY -->
+  <article class="article-body">
+
+    <!-- ABSTRACT -->
+    <div class="abstract-box">
+      <div class="abstract-label">Summary</div>
+      <p>
+        In July 2025, Hackenburg et al. published the largest study to date on AI-driven political persuasion: three experiments spanning 76,977 participants, 19 large language models, 707 political issues, and 466,769 fact-checked claims. Their central finding -- that optimizing for persuasion systematically degrades factual accuracy -- has direct implications for how organizations evaluate and deploy language models. This research brief examines the study's key results through the lens of behavioral evaluation, sycophancy research, and vendor-agnostic assessment infrastructure, drawing connections to Presba's published work on these topics and identifying what the findings mean for government and enterprise AI procurement.
+      </p>
+    </div>
+
+
+    <!-- 1. THE STUDY -->
+    <div class="section-title">1. The Study at a Glance</div>
+
+    <p>
+      "The Levers of Political Persuasion with Conversational AI" <span class="cite">(Hackenburg et al., 2025)</span> deployed 19 LLMs -- spanning more than four orders of magnitude in computational scale, from sub-billion parameter open-source models to frontier systems including GPT-4.5 and Grok-3 -- in multi-turn persuasive conversations with UK adults recruited via Prolific. Participants engaged in dialogues averaging seven turns and nine minutes. Before and after each conversation, they reported their agreement with a randomly assigned political opinion statement on a percentage-point scale. A control group received no persuasive conversation. The researchers then fact-checked every claim the models made across more than 91,000 conversations.
+    </p>
+
+    <p>
+      The study asked three questions. First, are larger models more persuasive? Second, can post-training techniques amplify persuasiveness? Third, what strategies underpin successful AI persuasion -- personalization, rhetorical framing, or something else entirely?
+    </p>
+
+    <p>
+      The answers challenge several widely held assumptions about AI influence risk.
+    </p>
+
+
+    <!-- 2. KEY FINDINGS -->
+    <div class="section-title">2. Key Findings</div>
+
+    <div class="subsection-title">2.1 Post-Training Eclipses Scale</div>
+
+    <p>
+      When post-training was held constant across open-source models, persuasiveness scaled modestly with model size: approximately +1.59 percentage points per order of magnitude increase in compute. But among developer post-trained models -- where each lab applied its own opaque training pipeline -- no reliable scaling relationship emerged. The most striking demonstration: GPT-4o, updated in March 2025, was significantly more persuasive than the much larger GPT-4.5 (11.76pp vs. 10.51pp, p = .004) and Grok-3 (9.05pp, p &lt; .001). Two deployments of GPT-4o that differed only in post-training were separated by +3.50 percentage points -- more than the predicted gain from scaling compute by a factor of ten <span class="cite">(Hackenburg et al., 2025)</span>.
+    </p>
+
+    <p>
+      Reward modeling (RM) -- a post-training technique that selects the most persuasive response from a set of candidates at each turn -- increased persuasiveness by +2.32pp (p &lt; .001) for open-source models. Applied to the small Llama-3.1-8B, RM made it as persuasive as or more persuasive than the much larger frontier GPT-4o. Even actors with modest computational resources could, in principle, deploy highly persuasive AI systems by applying RM to freely available models.
+    </p>
+
+    <div class="subsection-title">2.2 Information Density Is the Mechanism</div>
+
+    <p>
+      Of eight theoretically motivated persuasion strategies tested -- including moral reframing, deep canvassing, storytelling, and social norms -- the most effective was the simplest: instructing the model to present facts and evidence. This "information prompt" was 27% more persuasive than a basic "be as persuasive as you can" instruction (10.60pp vs. 8.34pp, p &lt; .001). Moral reframing and deep canvassing actually performed worse than the basic prompt.
+    </p>
+
+    <p>
+      The mechanism was information density -- the raw number of fact-checkable claims per conversation. Each additional claim corresponded with +0.30pp in persuasion, and a two-stage regression analysis found that information density explained 44% of the overall variance in persuasive effects across all conditions, rising to 75% among developer post-trained models alone. The most persuasive models were not the most psychologically sophisticated; they were the ones that generated the most claims.
+    </p>
+
+    <div class="subsection-title">2.3 Personalization Is Surprisingly Weak</div>
+
+    <p>
+      Despite widespread fears about AI-enabled microtargeting, personalization -- tested via prompt-based methods, fine-tuning on personal data, and personalized reward modeling -- produced an average effect of just +0.43 percentage points. Across all methods and studies, the effect never exceeded 1pp. As a persuasion lever, personalization ranked below model scale, post-training, and information prompting <span class="cite">(Hackenburg et al., 2025)</span>.
+    </p>
+
+    <div class="subsection-title">2.4 The Persuasion-Accuracy Tradeoff</div>
+
+    <p>
+      This is the study's most consequential finding. Every method that increased persuasiveness also decreased factual accuracy. Under information prompting, GPT-4o's proportion of accurate claims dropped from 78% to 62% (p &lt; .001). Reward modeling increased persuasion by +2.32pp but decreased accurate claims by -2.22pp (p &lt; .001). The post-training update that made GPT-4o more persuasive simultaneously reduced its accuracy by -12.53 percentage points (p &lt; .001). GPT-4.5 -- one of the largest models tested -- had claims rated inaccurate more than 30% of the time, roughly equivalent to the much smaller Llama-3.1-8B <span class="cite">(Hackenburg et al., 2025)</span>.
+    </p>
+
+    <p>
+      Notably, the inaccuracy appears to be a byproduct rather than a cause of persuasion. When one model was explicitly instructed to fabricate information, it produced more inaccurate claims (+2.51pp, p = .006) but did not become more persuasive (-0.73pp, p = .157). The models are not persuading through falsehood; they are generating falsehood as a side effect of generating volume.
+    </p>
+
+
+    <!-- 3. CONNECTIONS -->
+    <div class="section-title">3. Connections to Presba's Research</div>
+
+    <p>
+      Several of our published research papers intersect directly with these findings. The connections are not incidental -- they suggest that the evaluation frameworks we have proposed are well-positioned to address the specific risks this study identifies.
+    </p>
+
+    <div class="subsection-title">3.1 Sycophancy as Predictive Framework</div>
+
+    <p>
+      Our survey of sycophantic behavior in language models <span class="cite">(Presba, 2026a)</span> proposed a four-subtype taxonomy: capitulation (opinion flipping), feedback softening (critique avoidance), authority deference (framing acceptance), and position abandonment (progressive erosion). The Hackenburg et al. findings provide large-scale empirical validation of the mechanisms this taxonomy describes.
+    </p>
+
+    <p>
+      The persuasion-accuracy tradeoff is, at its core, the sycophancy problem applied to a different objective function. Where sycophancy optimizes for user agreement at the expense of truthfulness, persuasion post-training optimizes for attitude change at the expense of accuracy. Both involve the same fundamental dynamic: a reward signal that is correlated with but distinct from factual correctness, and an optimization process that exploits the gap between them. Our finding that RLHF systematically amplifies sycophancy -- with annotators preferring agreeable responses a non-negligible fraction of the time -- directly parallels Hackenburg et al.'s finding that reward modeling amplifies persuasiveness while degrading accuracy. The training signal rewards the wrong thing; the model obliges.
+    </p>
+
+    <p>
+      The subtype of position abandonment is particularly relevant. Hackenburg et al. found that conversational AI was 41-52% more persuasive than static messages, and that persuasion intensified over multi-turn exchanges. Our taxonomy predicts this: position abandonment describes the progressive weakening of a model's stance under sustained conversational pressure, with SYCON-Bench finding multi-turn sycophancy 63.8% more severe than single-turn evaluations <span class="cite">(Hong et al., 2025)</span>. If we consider the human participant as the one under pressure rather than the model, the same multi-turn dynamic applies in reverse -- sustained exposure to high-volume claims erodes the participant's position over successive turns.
+    </p>
+
+    <div class="subsection-title">3.2 Behavioral Fingerprinting and the Failure of Scale as Proxy</div>
+
+    <p>
+      Our behavioral fingerprinting framework <span class="cite">(Presba, 2026b)</span> argued that traditional benchmarks measure capability but fail to characterize the behavioral tendencies that determine real-world fitness. Hackenburg et al. provide perhaps the most compelling empirical demonstration of this thesis to date.
+    </p>
+
+    <p>
+      Their finding that GPT-4.5 -- one of the largest and most capable models by standard benchmarks -- was less accurate than GPT-3.5 while being similarly accurate to the much smaller Llama-3.1-8B is exactly the kind of result that capability benchmarks cannot detect and that behavioral profiling was designed to surface. A model's score on MMLU or HumanEval tells you nothing about whether it will fabricate claims when prompted for persuasion. A behavioral fingerprint that includes dimensions for factual consistency under pressure, information density tendencies, and accuracy-under-instruction would.
+    </p>
+
+    <p>
+      The study's central insight -- that post-training, not model scale, determines persuasive behavior -- is a direct argument for cross-condition delta analysis, the methodology we proposed for isolating behavioral signal from general knowledge. Two GPT-4o deployments with identical architecture but different post-training diverged by 3.50 percentage points in persuasion and 12.53 percentage points in accuracy. This divergence is invisible to any evaluation that treats model identity as fixed. It is precisely visible to a framework that tests the same model under varying conditions and measures the delta.
+    </p>
+
+    <div class="subsection-title">3.3 Context Window Degradation and the Conversation Effect</div>
+
+    <p>
+      Our research on context window degradation <span class="cite">(Presba, 2026c)</span> documented systematic declines in instruction compliance, factual consistency, and behavioral stability as conversations extend -- with 39% average performance degradation in multi-turn interactions and detectable degradation onset at a median of 73 interactions in agentic systems. Hackenburg et al. did not examine whether accuracy degraded over the course of individual conversations, but their design -- averaging seven turns -- falls squarely within the window where our research predicts measurable drift.
+    </p>
+
+    <p>
+      This raises an untested but important question: does the persuasion-accuracy tradeoff worsen as conversations progress? If models are generating 22+ claims per conversation under maximally persuasive conditions, and if factual consistency degrades with conversational length as our research documents, then the inaccuracy rate at turn seven may be substantially higher than the conversation-level average suggests. The 29.7% inaccuracy rate reported for maximally persuasive conditions may represent a floor rather than a ceiling. We identify this as a priority area for future empirical work.
+    </p>
+
+    <div class="subsection-title">3.4 Adversarial Resilience and Persuasion as Attack Vector</div>
+
+    <p>
+      Our graduated escalation methodology for adversarial resilience testing <span class="cite">(Presba, 2026d)</span> catalogs failure modes including competing objectives and mismatched generalization. Reward modeling for persuasion is, in functional terms, an adversarial optimization technique. It takes a base model and systematically selects outputs that maximize a target metric (attitude change) at the expense of a safety-relevant metric (accuracy). The fact that this technique made a small, freely available Llama-8B as persuasive as frontier GPT-4o represents a capability amplification that bypasses the access controls and safety guardrails built into closed-source models.
+    </p>
+
+    <p>
+      From a security perspective, the Hackenburg et al. study demonstrates that persuasion post-training is accessible to any actor with the ability to fine-tune an open-source model and deploy a reward model -- a computational requirement well within reach of state and non-state actors. The graduated escalation framework we proposed is designed to test models under precisely this kind of adversarial pressure: not a single attack, but a systematic optimization process that probes the model's failure surface under increasing adversarial effort.
+    </p>
+
+    <div class="subsection-title">3.5 Implications for Vendor-Agnostic Evaluation and Federal Compliance</div>
+
+    <p>
+      Our case for vendor-agnostic evaluation infrastructure <span class="cite">(Presba, 2026e)</span> identified benchmark contamination, selective reporting, and evaluation gaming as systemic failures in current model assessment. The Hackenburg et al. findings provide a concrete example of why these failures matter in practice. GPT-4.5, which would score well on standard capability benchmarks, produced inaccurate claims at roughly the same rate as a model 50 times smaller. Without standardized behavioral assessment that measures accuracy under realistic task conditions, procurement decisions based on benchmark leaderboards will systematically misjudge model fitness.
+    </p>
+
+    <p>
+      For federal agencies operating under ICD 203, the implications are direct. Analytic tradecraft standards require that intelligence products be based on accurate information, properly express uncertainty, and distinguish between underlying intelligence and analysts' assumptions <span class="cite">(Presba, 2026f)</span>. A model that generates 22 claims per interaction with a 30% inaccuracy rate fails these standards by construction. Current compliance frameworks do not test for persuasion-optimized behavior, but the Hackenburg et al. study demonstrates that such behavior can emerge from standard post-training procedures -- not only from deliberate adversarial optimization. Evaluation frameworks aligned with ICD 203, NIST AI RMF, and NIST 600-1 must incorporate behavioral dimensions that capture the accuracy-persuasion tradeoff under realistic conversational conditions.
+    </p>
+
+
+    <!-- 4. WHAT THIS MEANS -->
+    <div class="section-title">4. What This Means for Organizations Deploying AI</div>
+
+    <p>
+      The Hackenburg et al. study shifts the AI risk landscape in ways that should influence evaluation strategy, procurement decisions, and deployment architecture.
+    </p>
+
+    <p>
+      <strong>Benchmark scores are not behavioral guarantees.</strong> The largest and highest-scoring models are not necessarily the most accurate under conversational pressure. Organizations that select models based on capability benchmarks alone may deploy systems that are less accurate than smaller, cheaper alternatives under real-world conditions. Behavioral evaluation that tests models under task-specific conditions -- including sustained multi-turn interaction, information-dense prompting, and adversarial post-training -- is not optional.
+    </p>
+
+    <p>
+      <strong>Post-training is the critical variable.</strong> Two deployments of the same model architecture can differ by more than 12 percentage points in accuracy depending on post-training. For organizations deploying models from vendors who update their post-training pipelines regularly, this means that a model evaluated in January may behave materially differently by March. Continuous behavioral monitoring -- not one-time evaluation -- is required.
+    </p>
+
+    <p>
+      <strong>The sycophancy-persuasion spectrum is a single failure mode.</strong> Sycophancy (optimizing for user agreement) and persuasion optimization (optimizing for attitude change) are two points on the same continuum: reward signals that are correlated with but not identical to factual accuracy. Any RLHF-trained model is exposed to this continuum. Organizations should evaluate not only whether a model is sycophantic in its default configuration, but how its accuracy responds to prompt-level and post-training-level optimization pressure.
+    </p>
+
+    <p>
+      <strong>Small models can be weaponized.</strong> The study demonstrates that a freely available 8-billion parameter model, when equipped with reward modeling, matches the persuasive capability of frontier closed-source models. Threat models that assume only state-level actors or large AI labs can produce highly persuasive AI systems are outdated. Security evaluations must account for the possibility that adversaries are deploying optimized small models, not only jailbroken large ones.
+    </p>
+
+
+    <!-- 5. CONCLUSION -->
+    <div class="section-title">5. Conclusion</div>
+
+    <p>
+      The Hackenburg et al. study is the most comprehensive empirical investigation of AI persuasion to date. Its findings -- that post-training dominates scale, that information density drives persuasion, that personalization is surprisingly weak, and that persuasion optimization systematically degrades accuracy -- are consistent with and in several cases directly predicted by the evaluation frameworks, sycophancy taxonomy, and behavioral profiling methodology we have published over the past year.
+    </p>
+
+    <p>
+      What the study demonstrates empirically, at a scale of 77,000 participants and nearly half a million fact-checked claims, is that the behavioral tendencies of language models are not adequately captured by capability benchmarks and do not scale predictably with model size. The evaluation infrastructure required to assess these tendencies -- behavioral fingerprinting, adversarial resilience testing, context-aware accuracy measurement, and compliance-aligned assessment frameworks -- is not a theoretical aspiration. It is a practical necessity, made more urgent by each study that reveals the gap between what models can do and how they actually behave.
+    </p>
+
+
+    <!-- REFERENCES -->
+    <div class="section-title">References</div>
+
+    <ol class="references-list">
+      <li>
+        Hackenburg, K., Tappin, B.M., Hewitt, L., Saunders, E., Black, S., Lin, H., Fist, C., Margetts, H., Rand, D.G. &amp; Summerfield, C. (2025). "The Levers of Political Persuasion with Conversational AI." <em>arXiv preprint</em>. <a href="https://arxiv.org/abs/2507.13919">arxiv:2507.13919</a>
+      </li>
+      <li>
+        Presba, LLC. (2026a). "The Sycophancy Problem: Measuring and Mitigating Agreement Bias in Large Language Models." <a href="/research/sycophancy-problem.html">presba.com/research</a>
+      </li>
+      <li>
+        Presba, LLC. (2026b). "Behavioral Fingerprinting of Large Language Models: Beyond Benchmark Scores to Operational Characterization." <a href="/research/behavioral-fingerprinting.html">presba.com/research</a>
+      </li>
+      <li>
+        Presba, LLC. (2026c). "Context Window Degradation in Extended AI Interactions: Quantifying Instruction Decay and Behavioral Drift." <a href="/research/context-degradation.html">presba.com/research</a>
+      </li>
+      <li>
+        Presba, LLC. (2026d). "Adversarial Resilience Testing for Production AI Systems: A Graduated Escalation Methodology." <a href="/research/adversarial-resilience.html">presba.com/research</a>
+      </li>
+      <li>
+        Presba, LLC. (2026e). "The Case for Vendor-Agnostic AI Evaluation Infrastructure in Government and Enterprise." <a href="/research/vendor-agnostic-evaluation.html">presba.com/research</a>
+      </li>
+      <li>
+        Presba, LLC. (2026f). "Bridging AI Evaluation and Federal Compliance: Toward ICD 203-Aligned Model Assessment Frameworks." <a href="/research/compliance-alignment.html">presba.com/research</a>
+      </li>
+      <li>
+        Hong, S. et al. (2025). "SYCON-Bench: Evaluating Conversational Sycophancy in Large Language Models." <em>arXiv preprint</em>.
+      </li>
+      <li>
+        Sharma, M. et al. (2024). "Towards Understanding Sycophancy in Language Models." <em>ICLR 2024</em>.
+      </li>
+      <li>
+        Broockman, D. &amp; Kalla, J. (2016). "Durably Reducing Transphobia: A Field Experiment on Door-to-Door Canvassing." <em>Science</em>, 352(6282), 220-224.
+      </li>
+      <li>
+        Costello, T., Pennycook, G. &amp; Rand, D.G. (2024). "Durably Reducing Conspiracy Beliefs Through Dialogues with AI." <em>Science</em>, 385(6714), eadq1814.
+      </li>
+      <li>
+        Salvi, F. et al. (2024). "On the Conversational Persuasiveness of Large Language Models: A Randomized Controlled Trial." <em>arXiv preprint</em>.
+      </li>
+      <li>
+        Argyle, L. et al. (2025). "Testing Theories of Political Persuasion Using AI." <em>PNAS</em>.
+      </li>
+    </ol>
+
+  </article>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <span>&copy; 2025&ndash;2026 Presba, LLC</span>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/research/">Research</a>
+      <a href="/#work">What We Do</a>
+      <a href="/#about">About</a>
+      <a href="/#contact">Contact</a>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu
+    const btn = document.getElementById('menu-btn');
+    const mm = document.getElementById('mobile-menu');
+    btn.addEventListener('click', () => mm.classList.toggle('open'));
+    function closeMobile() { mm.classList.remove('open'); }
+  </script>
+</body>
+</html>
